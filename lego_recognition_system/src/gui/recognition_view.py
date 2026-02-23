@@ -67,6 +67,28 @@ def load_models(models_dir):
     return yolo_model, feature_extractor, vector_index
 
 
+@st.cache_data(show_spinner=False, ttl=3600)
+def fetch_lego_image(ldraw_id):
+    """Fetches a thumbnail image of the LEGO part from Rebrickable CDN with SSL bypass."""
+    # Clean up the ID since the Vector DB might return '3001.dat' instead of '3001'
+    clean_id = str(ldraw_id).replace('.dat', '').strip()
+    
+    # Color 14 is Light Bluish Gray (standard render color)
+    url = f"https://cdn.rebrickable.com/media/parts/ldraw/14/{clean_id}.png"
+    
+    try:
+        # Create a secure context using certifi specifically to fix macOS errors
+        import ssl
+        context = ssl.create_default_context(cafile=certifi.where())
+        
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, context=context, timeout=3) as response:
+            image_data = response.read()
+            return Image.open(io.BytesIO(image_data))
+    except Exception as e:
+        # Silently fail and return None if missing or network error
+        return None
+
 def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
     """Renders the main recognition pipeline visualization."""
     
@@ -93,8 +115,25 @@ def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
         return
         
     result = results[0]
-    boxes = result.boxes.xyxy.cpu().numpy()
-    confidences = result.boxes.conf.cpu().numpy()
+    
+    # Check if we have OBB (Oriented Bounding Boxes) from yolo11-obb model
+    use_obb = hasattr(result, 'obb') and result.obb is not None
+    
+    if use_obb:
+        # Extract 8-coordinate polygons
+        polygons = result.obb.xyxyxyxy.cpu().numpy()
+        confidences = result.obb.conf.cpu().numpy()
+        
+        # We also need an AABB (x1,y1,x2,y2) for Phase 2 image cropping
+        boxes = []
+        for poly in polygons:
+            min_x, max_x = np.min(poly[:, 0]), np.max(poly[:, 0])
+            min_y, max_y = np.min(poly[:, 1]), np.max(poly[:, 1])
+            boxes.append([min_x, min_y, max_x, max_y])
+    else:
+        # Fallback to standard rectangular boxes
+        boxes = result.boxes.xyxy.cpu().numpy()
+        confidences = result.boxes.conf.cpu().numpy()
     
     # Draw boxes for the UI
     drawn_image = image.copy()
@@ -104,11 +143,19 @@ def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
         x1, y1, x2, y2 = map(int, box)
         conf = confidences[i]
         
-        # Draw bounding box
-        draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
-        draw.text((x1, max(0, y1 - 15)), f"Part {i+1} ({conf:.2f})", fill="red")
+        if use_obb:
+            # Draw oriented polygon
+            poly = polygons[i]
+            points = [(int(pt[0]), int(pt[1])) for pt in poly]
+            draw.polygon(points, outline="red", width=3)
+            # Label on the top-left-most point of the polygon
+            draw.text((x1, max(0, y1 - 15)), f"Part {i+1} ({conf:.2f})", fill="red")
+        else:
+            # Draw standard bounding box
+            draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
+            draw.text((x1, max(0, y1 - 15)), f"Part {i+1} ({conf:.2f})", fill="red")
         
-    st.image(drawn_image, caption=f"Detected {len(boxes)} potential LEGO parts", use_container_width=True)
+    st.image(drawn_image, caption=f"Detected {len(boxes)} potential LEGO parts {'(Oriented)' if use_obb else '(Rectangular)'}", use_container_width=True)
     
     st.markdown("---")
     st.subheader("2. Vector Search Classification (Phase 2)")
@@ -127,20 +174,53 @@ def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
         
         cropped_img = image.crop((cx1, cy1, cx2, cy2))
         
+        # OBB MASKING: Erase everything outside the specific diagonal polygon (Background Noise)
+        if use_obb:
+            poly = polygons[i]
+            # 1. Create a pure black canvas matching the crop
+            mask = Image.new("L", cropped_img.size, 0)
+            draw_mask = ImageDraw.Draw(mask)
+            
+            # 2. Shift the global OBB coordinates to relative crop coordinates
+            cropped_poly = [(pt[0] - cx1, pt[1] - cy1) for pt in poly]
+            
+            # 3. Draw the piece shape in solid white on the mask
+            draw_mask.polygon(cropped_poly, fill=255)
+            
+            # 4. Create Pitch Black background image
+            black_bg = Image.new("RGB", cropped_img.size, (0, 0, 0))
+            
+            # 5. Composite: Only let the real image show where the mask is white
+            cropped_img = Image.composite(cropped_img, black_bg, mask)
+        
         with st.expander(f"🧩 Part {i+1} - Confidence: {confidences[i]:.0%}", expanded=True):
-            col1, col2 = st.columns([1, 2])
+            col1, col2, col3 = st.columns([1, 1, 2])
             
             with col1:
-                st.image(cropped_img, caption="Cropped ROI", width=150)
+                st.image(cropped_img, caption="Mundo Real (YOLO)", use_container_width=True)
                 
-            with col2:
-                # Extract embedding
-                embedding = extractor.get_embedding(cropped_img)
+            # Extract embedding
+            embedding = extractor.get_embedding(cropped_img)
+            
+            if v_index is not None and v_index.embeddings:
+                matches = v_index.search(embedding, k=3)
                 
-                if v_index is not None and v_index.embeddings:
-                    matches = v_index.search(embedding, k=3)
-                    
-                    st.markdown("**Top Matches from Vector DB:**")
+                # We extract the Top Match data for the center column
+                top_match_id = matches[0]['metadata'].get('ldraw_id', 'Unknown')
+                top_match_sim = matches[0]['similarity']
+                
+                with col2:
+                    if top_match_sim > 0.4:
+                        stock_img = fetch_lego_image(top_match_id)
+                        if stock_img:
+                            st.image(stock_img, caption=f"Stock ({top_match_id}.dat)", use_container_width=True)
+                        else:
+                            st.info("Sin Imagen 3D")
+                    else:
+                        st.info("Baja Confianza")
+
+                with col3:
+                    st.markdown("**Top Matches (Vector DB):**")
                     for match_idx, match in enumerate(matches):
                         ldraw_id = match['metadata'].get('ldraw_id', 'Unknown')
                         sim = match['similarity']
@@ -150,10 +230,11 @@ def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
                             identified_parts[ldraw_id] = identified_parts.get(ldraw_id, 0) + 1
                             
                         # Use a progress bar to show similarity
-                        st.markdown(f"**{match_idx + 1}. Part ID: `{ldraw_id}`** (Sim: {sim:.2f})")
+                        st.markdown(f"**{match_idx + 1}. ID: `{ldraw_id}`** (Sim: {sim:.2f})")
                         st.progress(max(0.0, min(1.0, float(sim))), text=None)
-                else:
-                    st.info(f"Generated Vector Embedding (Size: {embedding.shape[0]})")
+            else:
+                with col3:
+                    st.info(f"Generated Vector (Size: {embedding.shape[0]})")
                     st.code(str(embedding[:5]) + " ...")
 
     # Final Summary Metrics
