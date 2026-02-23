@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+*.pt
+*.pkl
+*.pickle
+credentials.json
+token*.pickle
+results/
+models/
+ldraw/

@@ -1,0 +1,2482 @@
+[
+    {
+        "part_num": "32200",
+        "name": "Axle Hose, Soft 12L",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "32200"
+    },
+    {
+        "part_num": "32235",
+        "name": "Axle Hose, Soft 19L",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 3,
+        "ldraw_id": "32235"
+    },
+    {
+        "part_num": "32580",
+        "name": "Axle Hose, Soft 7L",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "32580"
+    },
+    {
+        "part_num": "48729b",
+        "name": "Bar 1L with Clip [Cut Edges and One Side Hole] [Gap in Clip]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "48729b"
+    },
+    {
+        "part_num": "48729b",
+        "name": "Bar 1L with Clip [Cut Edges and One Side Hole] [Gap in Clip]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "48729b"
+    },
+    {
+        "part_num": "44728",
+        "name": "Bracket 1 x 2 - 2 x 2",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "44728"
+    },
+    {
+        "part_num": "3023",
+        "name": "Plate 1 x 2",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 10,
+        "ldraw_id": "28653"
+    },
+    {
+        "part_num": "3623",
+        "name": "Plate 1 x 3",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 13,
+        "ldraw_id": "3623"
+    },
+    {
+        "part_num": "3710",
+        "name": "Plate 1 x 4",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "3710"
+    },
+    {
+        "part_num": "3460",
+        "name": "Plate 1 x 8",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "3460"
+    },
+    {
+        "part_num": "3022",
+        "name": "Plate 2 x 2",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "3022"
+    },
+    {
+        "part_num": "2420",
+        "name": "Plate 2 x 2 Corner",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "2420"
+    },
+    {
+        "part_num": "3795",
+        "name": "Plate 2 x 6",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "3795"
+    },
+    {
+        "part_num": "11212",
+        "name": "Plate 3 x 3",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "11212"
+    },
+    {
+        "part_num": "15573",
+        "name": "Plate Special 1 x 2 with 1 Stud with Groove and Inside Stud Holder (Jumper)",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "15573"
+    },
+    {
+        "part_num": "11458",
+        "name": "Plate Special 1 x 2 with Pin Hole on Top",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "11458"
+    },
+    {
+        "part_num": "18677",
+        "name": "Plate Special 1 x 2 with Pin Hole Underneath",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 5,
+        "ldraw_id": "18677"
+    },
+    {
+        "part_num": "6180pr0009",
+        "name": "Plate Special 4 x 6 with Studs on 3 Edges with 'Lamborghini Sian' print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "6180pt0"
+    },
+    {
+        "part_num": "15672",
+        "name": "Slope 45\u00b0 2 x 1 with 2/3 Cutout [New Version]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "15672"
+    },
+    {
+        "part_num": "28192",
+        "name": "Slope 45\u00b0 2 x 1 with 2/3 Inverted Cutout and no stud",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "28192"
+    },
+    {
+        "part_num": "3040b",
+        "name": "Slope 45\u00b0 2 x 1 with Bottom Pin",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "3040b"
+    },
+    {
+        "part_num": "60481",
+        "name": "Slope 65\u00b0 2 x 1 x 2",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "60481a"
+    },
+    {
+        "part_num": "14226c11",
+        "name": "String with End Studs 11L Overall",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "76384"
+    },
+    {
+        "part_num": "32062",
+        "name": "Technic Axle 2 Notched",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 20,
+        "ldraw_id": "32062"
+    },
+    {
+        "part_num": "3705",
+        "name": "Technic Axle 4",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 16,
+        "ldraw_id": "3705"
+    },
+    {
+        "part_num": "3706",
+        "name": "Technic Axle 6",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 22,
+        "ldraw_id": "3706"
+    },
+    {
+        "part_num": "32013",
+        "name": "Technic Axle and Pin Connector Angled #1",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 18,
+        "ldraw_id": "32013"
+    },
+    {
+        "part_num": "32034",
+        "name": "Technic Axle and Pin Connector Angled #2 - 180\u00b0",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "32034"
+    },
+    {
+        "part_num": "32016",
+        "name": "Technic Axle and Pin Connector Angled #3 - 157.5\u00b0",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "32016"
+    },
+    {
+        "part_num": "32192",
+        "name": "Technic Axle and Pin Connector Angled #4 - 135\u00b0",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "32192"
+    },
+    {
+        "part_num": "32014",
+        "name": "Technic Axle and Pin Connector Angled #6 - 90\u00b0",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "32014"
+    },
+    {
+        "part_num": "6536",
+        "name": "Technic Axle and Pin Connector Perpendicular",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 37,
+        "ldraw_id": "6536"
+    },
+    {
+        "part_num": "42003",
+        "name": "Technic Axle and Pin Connector Perpendicular 3L with 2 Pin Holes",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 43,
+        "ldraw_id": "42003"
+    },
+    {
+        "part_num": "32291",
+        "name": "Technic Axle and Pin Connector Perpendicular Double",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 8,
+        "ldraw_id": "32291"
+    },
+    {
+        "part_num": "69819",
+        "name": "Technic Axle and Pin Connector Perpendicular Double Split [Reinforced]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 7,
+        "ldraw_id": "69819"
+    },
+    {
+        "part_num": "63869",
+        "name": "Technic Axle and Pin Connector Perpendicular Triple",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "63869"
+    },
+    {
+        "part_num": "32126",
+        "name": "Technic Axle and Pin Connector Toggle Joint Smooth",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "32126"
+    },
+    {
+        "part_num": "45590",
+        "name": "Technic Axle Connector Double Flexible [Rubber]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "45590"
+    },
+    {
+        "part_num": "59443",
+        "name": "Technic Axle Connector Smooth [with x Hole + Orientation]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 20,
+        "ldraw_id": "59443"
+    },
+    {
+        "part_num": "32039",
+        "name": "Technic Axle Connector with Axle Hole",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 14,
+        "ldraw_id": "32039"
+    },
+    {
+        "part_num": "18651",
+        "name": "Technic Axle Pin 3L with Friction Ridges Lengthwise and 2L Axle",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 37,
+        "ldraw_id": "18651"
+    },
+    {
+        "part_num": "32009",
+        "name": "Technic Beam 1 x 11.5 Double Bent Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 11,
+        "ldraw_id": "32009"
+    },
+    {
+        "part_num": "32525",
+        "name": "Technic Beam 1 x 11 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "32525"
+    },
+    {
+        "part_num": "41239",
+        "name": "Technic Beam 1 x 13 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "41239"
+    },
+    {
+        "part_num": "32278",
+        "name": "Technic Beam 1 x 15 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 28,
+        "ldraw_id": "32278"
+    },
+    {
+        "part_num": "60483",
+        "name": "Technic Beam 1 x 2 Thick with Pin Hole and Axle Hole",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 73,
+        "ldraw_id": "60483"
+    },
+    {
+        "part_num": "41677",
+        "name": "Technic Beam 1 x 2 Thin",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 68,
+        "ldraw_id": "41677"
+    },
+    {
+        "part_num": "32523",
+        "name": "Technic Beam 1 x 3 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 18,
+        "ldraw_id": "32523"
+    },
+    {
+        "part_num": "6632",
+        "name": "Technic Beam 1 x 3 Thin",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 28,
+        "ldraw_id": "6632"
+    },
+    {
+        "part_num": "32449",
+        "name": "Technic Beam 1 x 4 Thin",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "32449"
+    },
+    {
+        "part_num": "32316",
+        "name": "Technic Beam 1 x 5 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 41,
+        "ldraw_id": "32316"
+    },
+    {
+        "part_num": "11478",
+        "name": "Technic Beam 1 x 5 Thin with Axle Holes on Ends",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 12,
+        "ldraw_id": "11478"
+    },
+    {
+        "part_num": "32063",
+        "name": "Technic Beam 1 x 6 Thin",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 24,
+        "ldraw_id": "32063"
+    },
+    {
+        "part_num": "32348",
+        "name": "Technic Beam 1 x 7 Bent (4 - 4) Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "32348"
+    },
+    {
+        "part_num": "32524",
+        "name": "Technic Beam 1 x 7 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 11,
+        "ldraw_id": "32524"
+    },
+    {
+        "part_num": "6629",
+        "name": "Technic Beam 1 x 9 Bent (6 - 4) Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "6629"
+    },
+    {
+        "part_num": "40490",
+        "name": "Technic Beam 1 x 9 Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 33,
+        "ldraw_id": "40490"
+    },
+    {
+        "part_num": "32140",
+        "name": "Technic Beam 2 x 4 L-Shape Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 16,
+        "ldraw_id": "32140"
+    },
+    {
+        "part_num": "61408",
+        "name": "Technic Beam 3 x 0.5 Liftarm with Boss and Blocked, Squared Pin Hole",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "33299"
+    },
+    {
+        "part_num": "32056",
+        "name": "Technic Beam 3 x 3 L-Shape Thin",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 28,
+        "ldraw_id": "32056"
+    },
+    {
+        "part_num": "60484",
+        "name": "Technic Beam 3 x 3 T-Shape Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 8,
+        "ldraw_id": "60484"
+    },
+    {
+        "part_num": "32526",
+        "name": "Technic Beam 3 x 5 L-Shape Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 32,
+        "ldraw_id": "32526"
+    },
+    {
+        "part_num": "64179",
+        "name": "Technic Beam Frame 5 x 7 with 3 x 5 Opening Thick",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 7,
+        "ldraw_id": "64179"
+    },
+    {
+        "part_num": "39794",
+        "name": "Technic Beam Frame 7 x 11",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 3,
+        "ldraw_id": "39794"
+    },
+    {
+        "part_num": "3700",
+        "name": "Technic Brick 1 x 2 [1 Pin Hole]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "3700"
+    },
+    {
+        "part_num": "3894",
+        "name": "Technic Brick 1 x 6 [5 Pin Holes]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "3894"
+    },
+    {
+        "part_num": "42195",
+        "name": "Technic Driving Ring Connector Smooth [2 rounded and 2 flat side walls]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 8,
+        "ldraw_id": "42195"
+    },
+    {
+        "part_num": "32270",
+        "name": "Technic Gear 12 Tooth Double Bevel",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 9,
+        "ldraw_id": "32270"
+    },
+    {
+        "part_num": "87761",
+        "name": "Technic Gear Rack 1 x 7 with Axle and Pin Holes",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "87761"
+    },
+    {
+        "part_num": "32005a",
+        "name": "Technic Link 1 x 6 without Stoppers",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "2739a"
+    },
+    {
+        "part_num": "32293",
+        "name": "Technic Link 1 x 9",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "32293"
+    },
+    {
+        "part_num": "15458",
+        "name": "Technic Panel 3 x 11 x 1",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 13,
+        "ldraw_id": "15458"
+    },
+    {
+        "part_num": "64782",
+        "name": "Technic Panel 5 x 11 x 1",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 3,
+        "ldraw_id": "64782"
+    },
+    {
+        "part_num": "11954",
+        "name": "Technic Panel Curved 11 x 3 with 10 Pin Holes through Panel Surface",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 3,
+        "ldraw_id": "11954"
+    },
+    {
+        "part_num": "18944",
+        "name": "Technic Panel Curved 3 x 13",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "18944"
+    },
+    {
+        "part_num": "24119",
+        "name": "Technic Panel Curved 7 x 3 with 2 Pin Holes through Panel Surface",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "24119"
+    },
+    {
+        "part_num": "64394",
+        "name": "Technic Panel Fairing #13 Large Short Smooth, Side A",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "64394"
+    },
+    {
+        "part_num": "64680",
+        "name": "Technic Panel Fairing #14 Large Short Smooth, Side B",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "64680"
+    },
+    {
+        "part_num": "87080",
+        "name": "Technic Panel Fairing #1 Small Smooth Short, Side A",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "87080"
+    },
+    {
+        "part_num": "11946",
+        "name": "Technic Panel Fairing #21 5L Small Smooth, Side B",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 8,
+        "ldraw_id": "11946"
+    },
+    {
+        "part_num": "11947",
+        "name": "Technic Panel Fairing #22 5L Small Smooth, Side A",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 8,
+        "ldraw_id": "11947"
+    },
+    {
+        "part_num": "87086",
+        "name": "Technic Panel Fairing #2 Small Smooth Short, Side B",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "87086"
+    },
+    {
+        "part_num": "64683",
+        "name": "Technic Panel Fairing # 3 Small Smooth Long, Side A",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "64683"
+    },
+    {
+        "part_num": "64391",
+        "name": "Technic Panel Fairing # 4 Small Smooth Long, Side B",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "64391"
+    },
+    {
+        "part_num": "32333",
+        "name": "Technic Pin Connector Block 1 x 5 x 3",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "32333"
+    },
+    {
+        "part_num": "65487",
+        "name": "Technic Pin Connector Hub with 1 Pin with Friction Ridges Lengthwise [Square Holes]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 19,
+        "ldraw_id": "65487"
+    },
+    {
+        "part_num": "44874",
+        "name": "Technic Pin Connector Hub with 2 Pins with Friction Ridges Lengthwise [Small Squared Pin Holes]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "44874"
+    },
+    {
+        "part_num": "18654",
+        "name": "Technic Pin Connector Round 1L [Beam]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "18654"
+    },
+    {
+        "part_num": "18654",
+        "name": "Technic Pin Connector Round 1L [Beam]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 20,
+        "ldraw_id": "18654"
+    },
+    {
+        "part_num": "62462",
+        "name": "Technic Pin Connector Round [Slotted]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "62462"
+    },
+    {
+        "part_num": "32138",
+        "name": "Technic Pin Double with Axle Hole",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "32138"
+    },
+    {
+        "part_num": "32054",
+        "name": "Technic Pin Long with Friction Ridges Lengthwise and Stop Bush [3 Lateral Holes, Big Pin Hole]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 30,
+        "ldraw_id": "32054"
+    },
+    {
+        "part_num": "2780",
+        "name": "Technic Pin with Friction Ridges Lengthwise and Center Slots",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 511,
+        "ldraw_id": "2780"
+    },
+    {
+        "part_num": "2780",
+        "name": "Technic Pin with Friction Ridges Lengthwise and Center Slots",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "2780"
+    },
+    {
+        "part_num": "23801",
+        "name": "Technic Steering Wheel Hub Holder with 2 Pin Holes and 2 Axle Holes, Slots",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "23801"
+    },
+    {
+        "part_num": "2741",
+        "name": "Technic Steering Wheel Large",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "2741"
+    },
+    {
+        "part_num": "48267",
+        "name": "Technic Tooth 1 x 3 with Axle Hole [Hollow Underside]",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 6,
+        "ldraw_id": "48267"
+    },
+    {
+        "part_num": "3070b",
+        "name": "Tile 1 x 1 with Groove",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "3070b"
+    },
+    {
+        "part_num": "3070b",
+        "name": "Tile 1 x 1 with Groove",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 7,
+        "ldraw_id": "3070b"
+    },
+    {
+        "part_num": "3069bpr0291",
+        "name": "Tile 1 x 2 with Carbon Fiber print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 10,
+        "ldraw_id": "3069bp0m"
+    },
+    {
+        "part_num": "3069b",
+        "name": "Tile 1 x 2 with Groove",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "3069b"
+    },
+    {
+        "part_num": "63864",
+        "name": "Tile 1 x 3",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "63864"
+    },
+    {
+        "part_num": "2431pr0150",
+        "name": "Tile 1 x 4 with Dashboard print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "2431pc3"
+    },
+    {
+        "part_num": "6636",
+        "name": "Tile 1 x 6 with Groove",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "6636"
+    },
+    {
+        "part_num": "4162",
+        "name": "Tile 1 x 8 with Groove",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 5,
+        "ldraw_id": "4162"
+    },
+    {
+        "part_num": "4162pr0076",
+        "name": "Tile 1 x 8 with 'Lamborghini' print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "4162pt1"
+    },
+    {
+        "part_num": "3068bpr0424",
+        "name": "Tile 2 x 2 with V12, Carbon Fiber print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "3068bptb"
+    },
+    {
+        "part_num": "98138",
+        "name": "Tile Round 1 x 1",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 1,
+        "ldraw_id": "98138"
+    },
+    {
+        "part_num": "98138",
+        "name": "Tile Round 1 x 1",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "98138"
+    },
+    {
+        "part_num": "98138pr0161",
+        "name": "Tile Round 1 x 1 with Lamborghini Symbol print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 5,
+        "ldraw_id": "98138pt3"
+    },
+    {
+        "part_num": "98138pr0161",
+        "name": "Tile Round 1 x 1 with Lamborghini Symbol print",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "98138pt3"
+    },
+    {
+        "part_num": "27263",
+        "name": "Tile Special 2 x 2 Corner with Cut Corner - Facet",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 2,
+        "ldraw_id": "27263"
+    },
+    {
+        "part_num": "23799",
+        "name": "Tyre 81.6 x 44 ZR Technic Straight Tread",
+        "color_id": 0,
+        "color_name": "Black",
+        "quantity": 4,
+        "ldraw_id": "23799"
+    },
+    {
+        "part_num": "43093",
+        "name": "Technic Axle Pin with Friction Ridges Lengthwise",
+        "color_id": 1,
+        "color_name": "Blue",
+        "quantity": 162,
+        "ldraw_id": "43093"
+    },
+    {
+        "part_num": "43857",
+        "name": "Technic Beam 1 x 2 Thick",
+        "color_id": 1,
+        "color_name": "Blue",
+        "quantity": 5,
+        "ldraw_id": "43857"
+    },
+    {
+        "part_num": "35185",
+        "name": "Technic Gear 20 Tooth Double Bevel with Clutch on Both Sides",
+        "color_id": 1,
+        "color_name": "Blue",
+        "quantity": 2,
+        "ldraw_id": "35185"
+    },
+    {
+        "part_num": "4274",
+        "name": "Technic Pin 1/2",
+        "color_id": 1,
+        "color_name": "Blue",
+        "quantity": 2,
+        "ldraw_id": "4274"
+    },
+    {
+        "part_num": "4274",
+        "name": "Technic Pin 1/2",
+        "color_id": 1,
+        "color_name": "Blue",
+        "quantity": 78,
+        "ldraw_id": "4274"
+    },
+    {
+        "part_num": "6558",
+        "name": "Technic Pin Long with Friction Ridges Lengthwise, 2 Center Slots",
+        "color_id": 1,
+        "color_name": "Blue",
+        "quantity": 361,
+        "ldraw_id": "6558"
+    },
+    {
+        "part_num": "87994",
+        "name": "Bar 3L",
+        "color_id": 10,
+        "color_name": "Bright Green",
+        "quantity": 1,
+        "ldraw_id": "87994"
+    },
+    {
+        "part_num": "87994",
+        "name": "Bar 3L",
+        "color_id": 10,
+        "color_name": "Bright Green",
+        "quantity": 4,
+        "ldraw_id": "87994"
+    },
+    {
+        "part_num": "93609",
+        "name": "Arm Skeleton [Bent / 2 Clips]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "93609"
+    },
+    {
+        "part_num": "35189",
+        "name": "Brake Disc",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "35189"
+    },
+    {
+        "part_num": "87083",
+        "name": "Technic Axle 4 with Stop",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 23,
+        "ldraw_id": "87083"
+    },
+    {
+        "part_num": "59426",
+        "name": "Technic Axle 5.5 with Stop [Rounded Short End]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 5,
+        "ldraw_id": "59426"
+    },
+    {
+        "part_num": "55013",
+        "name": "Technic Axle 8 with Stop",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 5,
+        "ldraw_id": "55013"
+    },
+    {
+        "part_num": "32016",
+        "name": "Technic Axle and Pin Connector Angled #3 - 157.5\u00b0",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "32016"
+    },
+    {
+        "part_num": "42003",
+        "name": "Technic Axle and Pin Connector Perpendicular 3L with 2 Pin Holes",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "42003"
+    },
+    {
+        "part_num": "59443",
+        "name": "Technic Axle Connector Smooth [with x Hole + Orientation]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 9,
+        "ldraw_id": "59443"
+    },
+    {
+        "part_num": "32009",
+        "name": "Technic Beam 1 x 11.5 Double Bent Thick",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "32009"
+    },
+    {
+        "part_num": "32525",
+        "name": "Technic Beam 1 x 11 Thick",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 7,
+        "ldraw_id": "32525"
+    },
+    {
+        "part_num": "32278",
+        "name": "Technic Beam 1 x 15 Thick",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "32278"
+    },
+    {
+        "part_num": "60483",
+        "name": "Technic Beam 1 x 2 Thick with Pin Hole and Axle Hole",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "60483"
+    },
+    {
+        "part_num": "6632",
+        "name": "Technic Beam 1 x 3 Thin",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 12,
+        "ldraw_id": "6632"
+    },
+    {
+        "part_num": "32449",
+        "name": "Technic Beam 1 x 4 Thin",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "32449"
+    },
+    {
+        "part_num": "32524",
+        "name": "Technic Beam 1 x 7 Thick",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 10,
+        "ldraw_id": "32524"
+    },
+    {
+        "part_num": "32140",
+        "name": "Technic Beam 2 x 4 L-Shape Thick",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 17,
+        "ldraw_id": "32140"
+    },
+    {
+        "part_num": "39790",
+        "name": "Technic Beam Frame 11 x 15",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 3,
+        "ldraw_id": "39790"
+    },
+    {
+        "part_num": "18947",
+        "name": "Technic Driving Ring 3L",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 5,
+        "ldraw_id": "18947"
+    },
+    {
+        "part_num": "3648b",
+        "name": "Technic Gear 24 Tooth [New Style with Single Axle Hole]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "24505"
+    },
+    {
+        "part_num": "10928",
+        "name": "Technic Gear 8 Tooth [Reinforced]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 3,
+        "ldraw_id": "10928"
+    },
+    {
+        "part_num": "62821c",
+        "name": "Technic Gear Differential with Inner Tabs and Closed Center, 28 Bevel Teeth [Sharp Edge]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "62821c"
+    },
+    {
+        "part_num": "24119",
+        "name": "Technic Panel Curved 7 x 3 with 2 Pin Holes through Panel Surface",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 3,
+        "ldraw_id": "24119"
+    },
+    {
+        "part_num": "11946",
+        "name": "Technic Panel Fairing #21 5L Small Smooth, Side B",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "11946"
+    },
+    {
+        "part_num": "11947",
+        "name": "Technic Panel Fairing #22 5L Small Smooth, Side A",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "11947"
+    },
+    {
+        "part_num": "65487",
+        "name": "Technic Pin Connector Hub with 1 Pin with Friction Ridges Lengthwise [Square Holes]",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 14,
+        "ldraw_id": "65487"
+    },
+    {
+        "part_num": "27940",
+        "name": "Technic Pin Connector Hub with 2 Axles",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 9,
+        "ldraw_id": "27940"
+    },
+    {
+        "part_num": "10197",
+        "name": "Technic Pin Connector Hub with 2 Perpendicular Axles",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 8,
+        "ldraw_id": "10197"
+    },
+    {
+        "part_num": "57515",
+        "name": "Technic Steering Arm 5.5 x 2 with Towball Socket Rounded, Chamfered",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 8,
+        "ldraw_id": "57515"
+    },
+    {
+        "part_num": "52730",
+        "name": "Technic Steering / CV Ball Joint Female 4L",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 1,
+        "ldraw_id": "52730"
+    },
+    {
+        "part_num": "92906",
+        "name": "Technic Steering / CV Joint Axle",
+        "color_id": 72,
+        "color_name": "Dark Bluish Gray",
+        "quantity": 3,
+        "ldraw_id": "92906"
+    },
+    {
+        "part_num": "78c03",
+        "name": "Hose, Ribbed 7mm D. 3L / 2.4cm",
+        "color_id": 179,
+        "color_name": "Flat Silver",
+        "quantity": 2,
+        "ldraw_id": "72706"
+    },
+    {
+        "part_num": "3068b",
+        "name": "Tile 2 x 2 with Groove",
+        "color_id": 2,
+        "color_name": "Green",
+        "quantity": 2,
+        "ldraw_id": "3068b"
+    },
+    {
+        "part_num": "25214",
+        "name": "Brick Round 1 x 1 diameter Tube with 90 Degree Elbow (2 x 2 x 1) and Axle Holes (Crossholes) at each end",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 12,
+        "ldraw_id": "25214"
+    },
+    {
+        "part_num": "3710",
+        "name": "Plate 1 x 4",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "3710"
+    },
+    {
+        "part_num": "91988",
+        "name": "Plate 2 x 14",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 1,
+        "ldraw_id": "91988"
+    },
+    {
+        "part_num": "3021",
+        "name": "Plate 2 x 3",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 3,
+        "ldraw_id": "3021"
+    },
+    {
+        "part_num": "18677",
+        "name": "Plate Special 1 x 2 with Pin Hole Underneath",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "18677"
+    },
+    {
+        "part_num": "11477",
+        "name": "Slope Curved 2 x 1 No Studs [1/2 Bow]",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "11477"
+    },
+    {
+        "part_num": "4519",
+        "name": "Technic Axle 3",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 91,
+        "ldraw_id": "4519"
+    },
+    {
+        "part_num": "44294",
+        "name": "Technic Axle 7",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 17,
+        "ldraw_id": "44294"
+    },
+    {
+        "part_num": "32184",
+        "name": "Technic Axle and Pin Connector Perpendicular 3L with Centre Pin Hole",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 15,
+        "ldraw_id": "32184"
+    },
+    {
+        "part_num": "63869",
+        "name": "Technic Axle and Pin Connector Perpendicular Triple",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "63869"
+    },
+    {
+        "part_num": "2736",
+        "name": "Technic Axle Towball",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 10,
+        "ldraw_id": "2736"
+    },
+    {
+        "part_num": "41239",
+        "name": "Technic Beam 1 x 13 Thick",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 6,
+        "ldraw_id": "41239"
+    },
+    {
+        "part_num": "32523",
+        "name": "Technic Beam 1 x 3 Thick",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 8,
+        "ldraw_id": "32523"
+    },
+    {
+        "part_num": "6632",
+        "name": "Technic Beam 1 x 3 Thin",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 18,
+        "ldraw_id": "6632"
+    },
+    {
+        "part_num": "2825",
+        "name": "Technic Beam 1 x 4 Thin with Stud Connector",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "2825"
+    },
+    {
+        "part_num": "32316",
+        "name": "Technic Beam 1 x 5 Thick",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 10,
+        "ldraw_id": "32316"
+    },
+    {
+        "part_num": "11478",
+        "name": "Technic Beam 1 x 5 Thin with Axle Holes on Ends",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 14,
+        "ldraw_id": "11478"
+    },
+    {
+        "part_num": "61408",
+        "name": "Technic Beam 3 x 0.5 Liftarm with Boss and Blocked, Squared Pin Hole",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "33299"
+    },
+    {
+        "part_num": "32526",
+        "name": "Technic Beam 3 x 5 L-Shape Thick",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 7,
+        "ldraw_id": "32526"
+    },
+    {
+        "part_num": "14720",
+        "name": "Technic Beam 3 x 5 Thick [90\u00b0 Offset Centre Beam Holes]",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 8,
+        "ldraw_id": "14720"
+    },
+    {
+        "part_num": "64178",
+        "name": "Technic Beam 5 x 11 with 3 x 5 Opening Frame Thick",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 1,
+        "ldraw_id": "64178"
+    },
+    {
+        "part_num": "64179",
+        "name": "Technic Beam Frame 5 x 7 with 3 x 5 Opening Thick",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 3,
+        "ldraw_id": "64179"
+    },
+    {
+        "part_num": "3713",
+        "name": "Technic Bush",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "3713"
+    },
+    {
+        "part_num": "3713",
+        "name": "Technic Bush",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 38,
+        "ldraw_id": "3713"
+    },
+    {
+        "part_num": "32123b",
+        "name": "Technic Bush 1/2 Smooth with Axle Hole Semi-Reduced",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 6,
+        "ldraw_id": "32123b"
+    },
+    {
+        "part_num": "32123b",
+        "name": "Technic Bush 1/2 Smooth with Axle Hole Semi-Reduced",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 1,
+        "ldraw_id": "32123b"
+    },
+    {
+        "part_num": "2852",
+        "name": "Technic Engine Connecting Rod",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 12,
+        "ldraw_id": "2852"
+    },
+    {
+        "part_num": "2850b",
+        "name": "Technic Engine Cylinder without Side Slots, with Bottom Slots",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 12,
+        "ldraw_id": "2850b"
+    },
+    {
+        "part_num": "94925",
+        "name": "Technic Gear 16 Tooth Reinforced [New Style]",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 13,
+        "ldraw_id": "94925"
+    },
+    {
+        "part_num": "62531",
+        "name": "Technic Panel Curved 11 x 3 with 2 Pin Holes through Panel Surface",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "62531"
+    },
+    {
+        "part_num": "65489",
+        "name": "Technic Pin Connector Hub Perpendicular 3L with 4 Pins (Squared Holes)",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 4,
+        "ldraw_id": "65489"
+    },
+    {
+        "part_num": "55615",
+        "name": "Technic Pin Connector Hub Perpendicular 3 x 3 Bent with 4 Pins (Pin Ridges Across Part)",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "55615"
+    },
+    {
+        "part_num": "22961",
+        "name": "Technic Pin Connector Hub with 1 Axle",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 8,
+        "ldraw_id": "22961"
+    },
+    {
+        "part_num": "62462",
+        "name": "Technic Pin Connector Round [Slotted]",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 12,
+        "ldraw_id": "62462"
+    },
+    {
+        "part_num": "3673",
+        "name": "Technic Pin without Friction Ridges Lengthwise",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 7,
+        "ldraw_id": "3673"
+    },
+    {
+        "part_num": "3673",
+        "name": "Technic Pin without Friction Ridges Lengthwise",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 1,
+        "ldraw_id": "3673"
+    },
+    {
+        "part_num": "31794",
+        "name": "Technic Steering Arm 5 x 1 with Towball Socket (Type2)",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "31794"
+    },
+    {
+        "part_num": "52731",
+        "name": "Technic Steering / CV Ball Joint Male 3L",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 1,
+        "ldraw_id": "52731"
+    },
+    {
+        "part_num": "32494",
+        "name": "Technic Steering / CV Joint",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 7,
+        "ldraw_id": "32494"
+    },
+    {
+        "part_num": "61903",
+        "name": "Technic Universal Joint 3L [Complete Assembly]",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 6,
+        "ldraw_id": "61903"
+    },
+    {
+        "part_num": "63864",
+        "name": "Tile 1 x 3",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "63864"
+    },
+    {
+        "part_num": "2431",
+        "name": "Tile 1 x 4 with Groove",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 2,
+        "ldraw_id": "2431"
+    },
+    {
+        "part_num": "42610",
+        "name": "Wheel 11 x 8 with Center Groove",
+        "color_id": 71,
+        "color_name": "Light Bluish Gray",
+        "quantity": 5,
+        "ldraw_id": "42610"
+    },
+    {
+        "part_num": "32200",
+        "name": "Axle Hose, Soft 12L",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 3,
+        "ldraw_id": "32200"
+    },
+    {
+        "part_num": "32202",
+        "name": "Axle Hose, Soft 16L",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "32202"
+    },
+    {
+        "part_num": "32235",
+        "name": "Axle Hose, Soft 19L",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 8,
+        "ldraw_id": "32235"
+    },
+    {
+        "part_num": "32580",
+        "name": "Axle Hose, Soft 7L",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 3,
+        "ldraw_id": "32580"
+    },
+    {
+        "part_num": "3024",
+        "name": "Plate 1 x 1",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 8,
+        "ldraw_id": "3024"
+    },
+    {
+        "part_num": "3024",
+        "name": "Plate 1 x 1",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "3024"
+    },
+    {
+        "part_num": "3023",
+        "name": "Plate 1 x 2",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 6,
+        "ldraw_id": "28653"
+    },
+    {
+        "part_num": "3710",
+        "name": "Plate 1 x 4",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "3710"
+    },
+    {
+        "part_num": "3666",
+        "name": "Plate 1 x 6",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "3666"
+    },
+    {
+        "part_num": "3021",
+        "name": "Plate 2 x 3",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "3021"
+    },
+    {
+        "part_num": "65422",
+        "name": "Rotor Blade 3 x 19 with 3 Holes",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "65422"
+    },
+    {
+        "part_num": "15672",
+        "name": "Slope 45\u00b0 2 x 1 with 2/3 Cutout [New Version]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "15672"
+    },
+    {
+        "part_num": "88930",
+        "name": "Slope Brick Curved 2 x 4 x 2/3 No Studs, with Bottom Tubes",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "88930"
+    },
+    {
+        "part_num": "11477",
+        "name": "Slope Curved 2 x 1 No Studs [1/2 Bow]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "11477"
+    },
+    {
+        "part_num": "11153",
+        "name": "Slope Curved 4 x 1 No Studs [Stud Holder with Symmetric Ridges]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "61678"
+    },
+    {
+        "part_num": "32013",
+        "name": "Technic Axle and Pin Connector Angled #1",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 10,
+        "ldraw_id": "32013"
+    },
+    {
+        "part_num": "32034",
+        "name": "Technic Axle and Pin Connector Angled #2 - 180\u00b0",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "32034"
+    },
+    {
+        "part_num": "32016",
+        "name": "Technic Axle and Pin Connector Angled #3 - 157.5\u00b0",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 14,
+        "ldraw_id": "32016"
+    },
+    {
+        "part_num": "32015",
+        "name": "Technic Axle and Pin Connector Angled #5 - 112.5\u00b0",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "32015"
+    },
+    {
+        "part_num": "6536",
+        "name": "Technic Axle and Pin Connector Perpendicular",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 19,
+        "ldraw_id": "6536"
+    },
+    {
+        "part_num": "42003",
+        "name": "Technic Axle and Pin Connector Perpendicular 3L with 2 Pin Holes",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 3,
+        "ldraw_id": "42003"
+    },
+    {
+        "part_num": "63869",
+        "name": "Technic Axle and Pin Connector Perpendicular Triple",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 7,
+        "ldraw_id": "63869"
+    },
+    {
+        "part_num": "59443",
+        "name": "Technic Axle Connector Smooth [with x Hole + Orientation]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 7,
+        "ldraw_id": "59443"
+    },
+    {
+        "part_num": "32525",
+        "name": "Technic Beam 1 x 11 Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 9,
+        "ldraw_id": "32525"
+    },
+    {
+        "part_num": "41239",
+        "name": "Technic Beam 1 x 13 Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 9,
+        "ldraw_id": "41239"
+    },
+    {
+        "part_num": "60483",
+        "name": "Technic Beam 1 x 2 Thick with Pin Hole and Axle Hole",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 45,
+        "ldraw_id": "60483"
+    },
+    {
+        "part_num": "60483pr0001",
+        "name": "Technic Beam 1 x 2 Thick with Pin Hole and Axle Hole with Lamborghini Symbol print",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 3,
+        "ldraw_id": "60483pt1"
+    },
+    {
+        "part_num": "32523",
+        "name": "Technic Beam 1 x 3 Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 10,
+        "ldraw_id": "32523"
+    },
+    {
+        "part_num": "6632",
+        "name": "Technic Beam 1 x 3 Thin",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 8,
+        "ldraw_id": "6632"
+    },
+    {
+        "part_num": "32316",
+        "name": "Technic Beam 1 x 5 Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 13,
+        "ldraw_id": "32316"
+    },
+    {
+        "part_num": "32524",
+        "name": "Technic Beam 1 x 7 Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 14,
+        "ldraw_id": "32524"
+    },
+    {
+        "part_num": "32140",
+        "name": "Technic Beam 2 x 4 L-Shape Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 26,
+        "ldraw_id": "32140"
+    },
+    {
+        "part_num": "32526",
+        "name": "Technic Beam 3 x 5 L-Shape Thick",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 5,
+        "ldraw_id": "32526"
+    },
+    {
+        "part_num": "15458",
+        "name": "Technic Panel 3 x 11 x 1",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 5,
+        "ldraw_id": "15458"
+    },
+    {
+        "part_num": "67141",
+        "name": "Technic Panel Car Mudguard Arched 15 x 2 x 5, Arched Top",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "67141"
+    },
+    {
+        "part_num": "62531",
+        "name": "Technic Panel Curved 11 x 3 with 2 Pin Holes through Panel Surface",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "62531"
+    },
+    {
+        "part_num": "18944",
+        "name": "Technic Panel Curved 3 x 13",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "18944"
+    },
+    {
+        "part_num": "67142",
+        "name": "Technic Panel Curved 5 x 13 x 2 Tapered, Left",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "67142"
+    },
+    {
+        "part_num": "68196",
+        "name": "Technic Panel Curved 5 x 13 x 2 Tapered, Right",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "68196"
+    },
+    {
+        "part_num": "24116",
+        "name": "Technic Panel Curved and Bent 6 x 3",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "24116"
+    },
+    {
+        "part_num": "64394",
+        "name": "Technic Panel Fairing #13 Large Short Smooth, Side A",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 5,
+        "ldraw_id": "64394"
+    },
+    {
+        "part_num": "64680",
+        "name": "Technic Panel Fairing #14 Large Short Smooth, Side B",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 5,
+        "ldraw_id": "64680"
+    },
+    {
+        "part_num": "64392",
+        "name": "Technic Panel Fairing #17 Large Smooth, Side A",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "64392"
+    },
+    {
+        "part_num": "64682",
+        "name": "Technic Panel Fairing #18 Large Smooth, Side B",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "64682"
+    },
+    {
+        "part_num": "87080",
+        "name": "Technic Panel Fairing #1 Small Smooth Short, Side A",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "87080"
+    },
+    {
+        "part_num": "87080pr0001",
+        "name": "Technic Panel Fairing # 1 Small Smooth Short, Side A with Lamborghini Fuel Cap print",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "87080p01"
+    },
+    {
+        "part_num": "11946",
+        "name": "Technic Panel Fairing #21 5L Small Smooth, Side B",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 11,
+        "ldraw_id": "11946"
+    },
+    {
+        "part_num": "11947",
+        "name": "Technic Panel Fairing #22 5L Small Smooth, Side A",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 11,
+        "ldraw_id": "11947"
+    },
+    {
+        "part_num": "87086",
+        "name": "Technic Panel Fairing #2 Small Smooth Short, Side B",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 5,
+        "ldraw_id": "87086"
+    },
+    {
+        "part_num": "64683",
+        "name": "Technic Panel Fairing # 3 Small Smooth Long, Side A",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "64683"
+    },
+    {
+        "part_num": "64391",
+        "name": "Technic Panel Fairing # 4 Small Smooth Long, Side B",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "64391"
+    },
+    {
+        "part_num": "22961",
+        "name": "Technic Pin Connector Hub with 1 Axle",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 10,
+        "ldraw_id": "22961"
+    },
+    {
+        "part_num": "65487",
+        "name": "Technic Pin Connector Hub with 1 Pin with Friction Ridges Lengthwise [Square Holes]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 24,
+        "ldraw_id": "65487"
+    },
+    {
+        "part_num": "44874",
+        "name": "Technic Pin Connector Hub with 2 Pins with Friction Ridges Lengthwise [Small Squared Pin Holes]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 15,
+        "ldraw_id": "44874"
+    },
+    {
+        "part_num": "18654",
+        "name": "Technic Pin Connector Round 1L [Beam]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "18654"
+    },
+    {
+        "part_num": "18654",
+        "name": "Technic Pin Connector Round 1L [Beam]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 30,
+        "ldraw_id": "18654"
+    },
+    {
+        "part_num": "32054",
+        "name": "Technic Pin Long with Friction Ridges Lengthwise and Stop Bush [3 Lateral Holes, Big Pin Hole]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 6,
+        "ldraw_id": "32054"
+    },
+    {
+        "part_num": "48267",
+        "name": "Technic Tooth 1 x 3 with Axle Hole [Hollow Underside]",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 11,
+        "ldraw_id": "48267"
+    },
+    {
+        "part_num": "32294",
+        "name": "Technic Wishbone Suspension Arm 9L",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 4,
+        "ldraw_id": "32294"
+    },
+    {
+        "part_num": "3070b",
+        "name": "Tile 1 x 1 with Groove",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "3070b"
+    },
+    {
+        "part_num": "3070b",
+        "name": "Tile 1 x 1 with Groove",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "3070b"
+    },
+    {
+        "part_num": "2431",
+        "name": "Tile 1 x 4 with Groove",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 2,
+        "ldraw_id": "2431"
+    },
+    {
+        "part_num": "3068bpr0425",
+        "name": "Tile 2 x 2 with Lamborghini print",
+        "color_id": 27,
+        "color_name": "Lime",
+        "quantity": 1,
+        "ldraw_id": "3068bpta"
+    },
+    {
+        "part_num": "68577",
+        "name": "Wheel 62.3 x 42 Lamborghini",
+        "color_id": 82,
+        "color_name": "Metallic Gold",
+        "quantity": 4,
+        "ldraw_id": "68577"
+    },
+    {
+        "part_num": "35188",
+        "name": "Gear Shifter",
+        "color_id": 25,
+        "color_name": "Orange",
+        "quantity": 2,
+        "ldraw_id": "35188"
+    },
+    {
+        "part_num": "32034",
+        "name": "Technic Axle and Pin Connector Angled #2 - 180\u00b0",
+        "color_id": 25,
+        "color_name": "Orange",
+        "quantity": 6,
+        "ldraw_id": "32034"
+    },
+    {
+        "part_num": "4081b",
+        "name": "Plate Special 1 x 1 with Clip Light, Bar Hole [Thick Ring]",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 6,
+        "ldraw_id": "4081b"
+    },
+    {
+        "part_num": "2540",
+        "name": "Plate Special 1 x 2 Side Handle [Free Ends]",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 4,
+        "ldraw_id": "2540"
+    },
+    {
+        "part_num": "93273pr0017",
+        "name": "Slope Curved 4 x 1 Double with No Studs with 'Lamborghini' print",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 4,
+        "ldraw_id": "93273pt2"
+    },
+    {
+        "part_num": "35464",
+        "name": "Slope Double 45\u00b0 1 x 1",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 12,
+        "ldraw_id": "35464"
+    },
+    {
+        "part_num": "35464",
+        "name": "Slope Double 45\u00b0 1 x 1",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 1,
+        "ldraw_id": "35464"
+    },
+    {
+        "part_num": "32062",
+        "name": "Technic Axle 2 Notched",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 59,
+        "ldraw_id": "32062"
+    },
+    {
+        "part_num": "3705",
+        "name": "Technic Axle 4",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 32,
+        "ldraw_id": "3705"
+    },
+    {
+        "part_num": "32013",
+        "name": "Technic Axle and Pin Connector Angled #1",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 9,
+        "ldraw_id": "32013"
+    },
+    {
+        "part_num": "42003",
+        "name": "Technic Axle and Pin Connector Perpendicular 3L with 2 Pin Holes",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 18,
+        "ldraw_id": "42003"
+    },
+    {
+        "part_num": "32291",
+        "name": "Technic Axle and Pin Connector Perpendicular Double",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 5,
+        "ldraw_id": "32291"
+    },
+    {
+        "part_num": "11214",
+        "name": "Technic Axle Pin 3L with Friction Ridges Lengthwise and 1L Axle",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 64,
+        "ldraw_id": "11214"
+    },
+    {
+        "part_num": "32449",
+        "name": "Technic Beam 1 x 4 Thin",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 12,
+        "ldraw_id": "32449"
+    },
+    {
+        "part_num": "60484",
+        "name": "Technic Beam 3 x 3 T-Shape Thick",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 8,
+        "ldraw_id": "60484"
+    },
+    {
+        "part_num": "51149",
+        "name": "Technic Changeover Catch - New Style",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 1,
+        "ldraw_id": "51149"
+    },
+    {
+        "part_num": "42195",
+        "name": "Technic Driving Ring Connector Smooth [2 rounded and 2 flat side walls]",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 17,
+        "ldraw_id": "42195"
+    },
+    {
+        "part_num": "18946",
+        "name": "Technic Gear 16 Tooth with Clutch on Both Sides",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 16,
+        "ldraw_id": "18946"
+    },
+    {
+        "part_num": "2637",
+        "name": "Technic Link 1 x 16",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 2,
+        "ldraw_id": "2637"
+    },
+    {
+        "part_num": "32054",
+        "name": "Technic Pin Long with Friction Ridges Lengthwise and Stop Bush [3 Lateral Holes, Big Pin Hole]",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 35,
+        "ldraw_id": "32054"
+    },
+    {
+        "part_num": "6628",
+        "name": "Technic Pin with Friction Ridges Lengthwise and Towball",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 20,
+        "ldraw_id": "6628"
+    },
+    {
+        "part_num": "76537",
+        "name": "Technic Shock Absorber 6.5L with Hard Spring, Tight Coil in Middle [Complete Assembly]",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 8,
+        "ldraw_id": "76537"
+    },
+    {
+        "part_num": "3068b",
+        "name": "Tile 2 x 2 with Groove",
+        "color_id": 4,
+        "color_name": "Red",
+        "quantity": 2,
+        "ldraw_id": "3068b"
+    },
+    {
+        "part_num": "24316",
+        "name": "Technic Axle 3 with Stop",
+        "color_id": 70,
+        "color_name": "Reddish Brown",
+        "quantity": 22,
+        "ldraw_id": "24316"
+    },
+    {
+        "part_num": "15462",
+        "name": "Technic Axle 5 with Stop",
+        "color_id": 70,
+        "color_name": "Reddish Brown",
+        "quantity": 3,
+        "ldraw_id": "15462"
+    },
+    {
+        "part_num": "99008",
+        "name": "Technic Axle 4 with Centre Stop",
+        "color_id": 19,
+        "color_name": "Tan",
+        "quantity": 6,
+        "ldraw_id": "99008"
+    },
+    {
+        "part_num": "3749",
+        "name": "Technic Axle Pin without Friction Ridges Lengthwise",
+        "color_id": 19,
+        "color_name": "Tan",
+        "quantity": 7,
+        "ldraw_id": "3749"
+    },
+    {
+        "part_num": "2854",
+        "name": "Technic Engine Crankshaft Center",
+        "color_id": 19,
+        "color_name": "Tan",
+        "quantity": 5,
+        "ldraw_id": "2854"
+    },
+    {
+        "part_num": "6589",
+        "name": "Technic Gear 12 Tooth Bevel",
+        "color_id": 19,
+        "color_name": "Tan",
+        "quantity": 6,
+        "ldraw_id": "6589"
+    },
+    {
+        "part_num": "18575",
+        "name": "Technic Gear 20 Tooth Double Bevel with Axle Hole Type 1 [+ Opening]",
+        "color_id": 19,
+        "color_name": "Tan",
+        "quantity": 9,
+        "ldraw_id": "18575"
+    },
+    {
+        "part_num": "32556",
+        "name": "Technic Pin Long without Friction Ridges",
+        "color_id": 19,
+        "color_name": "Tan",
+        "quantity": 9,
+        "ldraw_id": "32556b"
+    },
+    {
+        "part_num": "30374",
+        "name": "Bar 4L (Lightsaber Blade / Wand)",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 2,
+        "ldraw_id": "30374"
+    },
+    {
+        "part_num": "63965",
+        "name": "Bar 6L with Stop Ring",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 6,
+        "ldraw_id": "63965a"
+    },
+    {
+        "part_num": "11458",
+        "name": "Plate Special 1 x 2 with Pin Hole on Top",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 2,
+        "ldraw_id": "11458"
+    },
+    {
+        "part_num": "85543",
+        "name": "Rubber Belt Small [15mm ID] [Round Cross Section]",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 2,
+        "ldraw_id": "85543"
+    },
+    {
+        "part_num": "32063",
+        "name": "Technic Beam 1 x 6 Thin",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 8,
+        "ldraw_id": "32063"
+    },
+    {
+        "part_num": "18948",
+        "name": "Technic Driving Ring Connector",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 1,
+        "ldraw_id": "18948"
+    },
+    {
+        "part_num": "2431pr0149",
+        "name": "Tile 1 x 4 with Si\u00e1n, Unique Code print",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 1,
+        "ldraw_id": "2431ptb"
+    },
+    {
+        "part_num": "3068b",
+        "name": "Tile 2 x 2 with Groove",
+        "color_id": 15,
+        "color_name": "White",
+        "quantity": 2,
+        "ldraw_id": "3068b"
+    },
+    {
+        "part_num": "32073",
+        "name": "Technic Axle 5",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 32,
+        "ldraw_id": "32073"
+    },
+    {
+        "part_num": "60485",
+        "name": "Technic Axle 9",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 3,
+        "ldraw_id": "60485"
+    },
+    {
+        "part_num": "32184",
+        "name": "Technic Axle and Pin Connector Perpendicular 3L with Centre Pin Hole",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 8,
+        "ldraw_id": "32184"
+    },
+    {
+        "part_num": "59443",
+        "name": "Technic Axle Connector Smooth [with x Hole + Orientation]",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 22,
+        "ldraw_id": "59443"
+    },
+    {
+        "part_num": "32039",
+        "name": "Technic Axle Connector with Axle Hole",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 3,
+        "ldraw_id": "32039"
+    },
+    {
+        "part_num": "35186",
+        "name": "Technic Driving Ring Extension, 8 Ridges",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 1,
+        "ldraw_id": "35186"
+    },
+    {
+        "part_num": "2853",
+        "name": "Technic Engine Crankshaft",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 2,
+        "ldraw_id": "2853"
+    },
+    {
+        "part_num": "2851",
+        "name": "Technic Engine Piston Round",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 12,
+        "ldraw_id": "2851"
+    },
+    {
+        "part_num": "32072",
+        "name": "Technic Knob Wheel",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 7,
+        "ldraw_id": "32072"
+    },
+    {
+        "part_num": "65487",
+        "name": "Technic Pin Connector Hub with 1 Pin with Friction Ridges Lengthwise [Square Holes]",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 7,
+        "ldraw_id": "65487"
+    },
+    {
+        "part_num": "85546",
+        "name": "Technic Rubber Belt Large [33mm ID] [Round Cross Section]",
+        "color_id": 14,
+        "color_name": "Yellow",
+        "quantity": 1,
+        "ldraw_id": "85546"
+    }
+]
