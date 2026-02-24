@@ -1,0 +1,122 @@
+import os, sys, shutil, json, logging, subprocess, time
+from pathlib import Path
+
+# =================================================================
+# 1. CONFIGURACIÓN DE ENTORNO Y RUTAS
+# =================================================================
+IS_LIGHTNING = os.path.exists('/home/teamspace/studios')
+STUDIO_ROOT = '/home/teamspace/studios' if IS_LIGHTNING else os.getcwd()
+
+# Rutas Persistentes (En Lightning no se borran al reiniciar)
+PROJECT_ROOT = os.path.join(STUDIO_ROOT, 'lego-recognition-v4')
+LDRAW_LIB = os.path.join(STUDIO_ROOT, 'ldraw_lib')
+BLENDER_BIN_DIR = os.path.join(STUDIO_ROOT, 'blender_4.0')
+MODELS_DIR = os.path.join(PROJECT_ROOT, 'models')
+DATASET_DIR = os.path.join(PROJECT_ROOT, 'datasets')
+
+for d in [PROJECT_ROOT, LDRAW_LIB, BLENDER_BIN_DIR, MODELS_DIR, DATASET_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger("LegoAI")
+
+# =================================================================
+# 2. MOTOR DE RENDERIZADO (BLENDER + CUDA OPTIMIZATION)
+# =================================================================
+def create_gpu_config_script():
+    """Crea un script de Python que Blender ejecutará para activar CUDA."""
+    script_path = os.path.join(PROJECT_ROOT, "enable_cuda.py")
+    content = """
+import bpy
+import addon_utils
+
+# Forzar Cycles y buscar GPUs
+bpy.context.scene.render.engine = 'CYCLES'
+for addon in ['cycles']:
+    addon_utils.enable(addon, default_enabled=True)
+
+prefs = bpy.context.preferences.addons['cycles'].preferences
+prefs.compute_device_type = 'CUDA'
+devices = prefs.get_devices_for_type('CUDA')
+
+for device in devices:
+    device.use = True
+    print(f"✅ Activado dispositivo: {device.name}")
+
+bpy.context.scene.cycles.device = 'GPU'
+# Optimización extra: reducir samples para entrenamiento de IA
+bpy.context.scene.cycles.samples = 128 
+bpy.context.scene.cycles.use_denoising = True
+    """
+    with open(script_path, "w") as f: f.write(content)
+    return script_path
+
+def run_render_task(part_id, output_path, blender_path):
+    """Ejecuta el renderizado de la pieza usando la GPU."""
+    gpu_script = create_gpu_config_script()
+    
+    # Comando para ejecutar Blender en modo headless (segundo plano)
+    # Reemplaza 'render_script.py' con tu script de lógica de posición de cámara
+    command = [
+        blender_path,
+        "-b", # background mode
+        "-P", gpu_script,
+        "--", # Separador para argumentos de tu script
+        "--part_id", part_id,
+        "--output", output_path,
+        "--ldraw_path", LDRAW_LIB
+    ]
+    
+    logger.info(f"🎨 Renderizando pieza {part_id} con GPU...")
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        logger.error(f"❌ Error en renderizado: {result.stderr}")
+    else:
+        logger.info(f"✅ Renderizado completado para {part_id}")
+
+# =================================================================
+# 3. ENTRENAMIENTO DE IA (YOLO-OBB)
+# =================================================================
+def train_lego_model(dataset_name):
+    from ultralytics import YOLO
+    
+    logger.info(f"🧠 Iniciando entrenamiento YOLO-OBB para {dataset_name}")
+    model = YOLO('yolov8n-obb.pt') # O v11 si ya la tienes integrada
+    
+    # batch=-1 detecta automáticamente cuántas imágenes caben en la T4/L4
+    results = model.train(
+        data=os.path.join(DATASET_DIR, dataset_name, 'data.yaml'),
+        epochs=100,
+        imgsz=640,
+        batch=-1, 
+        device=0, # Usar la primera GPU
+        project=MODELS_DIR,
+        name=dataset_name
+    )
+    return results
+
+# =================================================================
+# 4. LÓGICA PRINCIPAL (STRATEGY C)
+# =================================================================
+def main_pipeline(target_parts):
+    # 1. Verificar dependencias
+    # (Aquí iría la descarga de Blender y LDraw si no existen)
+    blender_exe = os.path.join(BLENDER_BIN_DIR, "blender") 
+    
+    for part in target_parts:
+        # 2. Check si el modelo ya existe en el disco persistente
+        final_model = os.path.join(MODELS_DIR, part, "weights/best.pt")
+        if os.path.exists(final_model):
+            logger.info(f"⏩ Saltando {part}, modelo ya entrenado.")
+            continue
+        
+        # 3. Renderizado Sintético
+        run_render_task(part, os.path.join(DATASET_DIR, part), blender_exe)
+        
+        # 4. Entrenamiento
+        train_lego_model(part)
+
+if __name__ == "__main__":
+    # Ejemplo: Piezas de un set Technic
+    mis_piezas = ["32523", "2730", "43093"] 
+    main_pipeline(mis_piezas)

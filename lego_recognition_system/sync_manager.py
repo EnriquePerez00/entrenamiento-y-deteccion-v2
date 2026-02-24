@@ -19,7 +19,7 @@ SYNC_DIRS = [os.path.join(SCRIPT_DIR, d) for d in ['src']]
 SYNC_FILES = [os.path.join(SCRIPT_DIR, f) for f in [
     'requirements.txt', 'config_train.json', 'master_unified_pipeline.ipynb', 
     'download_assets.py', 'assets/backgrounds/background.jpg', 'cycles_kernels.zip',
-    'credentials.json', 'token_1973.pickle'
+    'optix_cache.zip', 'credentials.json', 'token_1973.pickle'
 ]]
 
 def calculate_file_hash(filepath):
@@ -44,6 +44,20 @@ def get_current_state():
     # Files
     for filepath in SYNC_FILES:
         if os.path.exists(filepath):
+            h = calculate_file_hash(filepath)
+            if h: state[filepath] = h
+    
+    # Add generated notebooks
+    for file in os.listdir(SCRIPT_DIR):
+        if file.startswith('train_') and file.endswith('.ipynb'):
+            filepath = os.path.join(SCRIPT_DIR, file)
+            h = calculate_file_hash(filepath)
+            if h: state[filepath] = h
+            
+    # Add generated inventories
+    for file in os.listdir(SCRIPT_DIR):
+        if file.startswith('inventory_') and file.endswith('.json'):
+            filepath = os.path.join(SCRIPT_DIR, file)
             h = calculate_file_hash(filepath)
             if h: state[filepath] = h
             

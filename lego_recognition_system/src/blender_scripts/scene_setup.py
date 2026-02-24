@@ -58,7 +58,7 @@ def setup_render_engine():
     
     # Try to enable AI denoising — Blender 3.x and 4.x have different APIs
     denoiser_set = False
-    for denoiser_name in ['OPTIX', 'OPENIMAGEDENOISE']:
+    for denoiser_name in ['OPENIMAGEDENOISE', 'OPTIX']:
         try:
             scene.cycles.use_denoising = True
             scene.cycles.denoiser = denoiser_name
@@ -80,7 +80,12 @@ def setup_render_engine():
     scene.cycles.caustics_reflective = False
     scene.cycles.caustics_refractive = False
     scene.render.use_persistent_data = True
-    print("  ⚡ Cycles Eco-Mode: 8 samples + OptiX denoising.")
+    
+    # ⚡ GPU RENDERING OPTIMIZATION (T4 specific)
+    # Disable tiling to let the GPU render the whole frame at once. CPU doesn't have to interrupt the GPU.
+    scene.cycles.use_auto_tile = False
+    
+    print("  ⚡ Cycles Eco-Mode: 64 samples + OptiX denoising. Tiling DISABLED (Full frame rendering).")
 
 def register_ldraw_addon(addon_path=None):
     """Register the ImportLDraw addon from a dynamic path or local script dir."""
@@ -100,6 +105,7 @@ def register_ldraw_addon(addon_path=None):
 
     # Try to import and register. Support both 'ImportLDraw' and 'io_scene_importldraw' (standard)
     success = False
+    import_errors = []
     for module_name in ['ImportLDraw', 'io_scene_importldraw']:
         try:
             mod = __import__(module_name)
@@ -107,14 +113,20 @@ def register_ldraw_addon(addon_path=None):
             print(f"✅ Addon registered successfully via module: {module_name}")
             success = True
             break
-        except Exception:
+        except Exception as e:
+            import_errors.append(f"{module_name}: {e}")
             continue
 
     if not success:
         print("⚠️ Failed to register ImportLDraw addon via ImportLDraw or io_scene_importldraw.")
+        print(f"   Import Exceptions: {import_errors}")
         print("   Checking if it's already registered via standard installation...")
-        if "importldraw" not in dir(bpy.ops.import_scene):
-            raise Exception("❌ CRITICAL: ImportLDraw addon is NOT available. Aborting.")
+        try:
+            if "importldraw" not in dir(bpy.ops.import_scene):
+                raise Exception("❌ CRITICAL: ImportLDraw addon is NOT available. Aborting.")
+        except Exception as e:
+            print(f"❌ Error checking bpy.ops.import_scene: {e}")
+            raise
 
 def clean_scene():
     """Remove all objects from the scene."""
@@ -623,4 +635,10 @@ def main():
     print("Blender script finished.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print(f"\n❌ FATAL ERROR in Blender script:\n{e}")
+        traceback.print_exc()
+        sys.exit(1)

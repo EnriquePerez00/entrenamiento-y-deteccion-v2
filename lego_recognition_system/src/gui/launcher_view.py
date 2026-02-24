@@ -114,7 +114,9 @@ def render_launcher_ui(project_root):
             if st.button("📦 Generar ZIP Kaggle y Sincronizar"):
                 with st.spinner("Preparando archivos para piezas faltantes..."):
                     try:
-                        session_ref = st.session_state.get('current_full_ref', full_ref)
+                        # Use a fresh timestamp for the actual generation to avoid stale names
+                        session_ref = f"{target_id}_{datetime.now().strftime('%Y%m%d_%H%M')}"
+                        st.session_state['current_full_ref'] = session_ref
                         
                         # 1. Config (Solo con las piezas faltantes)
                         config_path = os.path.join(project_root, "config_train.json")
@@ -135,7 +137,9 @@ def render_launcher_ui(project_root):
                         
                         # 3. Sync & Pack
                         import sync_manager
-                        # Reset tracking to ensure minimal sync
+                        # Append new files to global tracking without wiping the list
+                        if config_path not in sync_manager.SYNC_FILES:
+                            sync_manager.SYNC_FILES.append(config_path)
                         if notebook_path not in sync_manager.SYNC_FILES:
                             sync_manager.SYNC_FILES.append(notebook_path)
                             

@@ -71,6 +71,17 @@ def main():
                     import datetime
                     import pytz
                     
+                    if yolo_files:
+                        newest_yolo = max(yolo_files, key=lambda x: dateutil.parser.parse(x['modifiedTime']))
+                        yolo_files = [newest_yolo]
+                        # Remove older/different local PT files
+                        for local_file in os.listdir(local_yolo_dir):
+                            if local_file.endswith('.pt') and local_file != newest_yolo['name']:
+                                try:
+                                    os.remove(os.path.join(local_yolo_dir, local_file))
+                                except OSError:
+                                    pass
+                    
                     for f in yolo_files:
                         local_path = os.path.join(local_yolo_dir, f['name'])
                         if not os.path.exists(local_path):

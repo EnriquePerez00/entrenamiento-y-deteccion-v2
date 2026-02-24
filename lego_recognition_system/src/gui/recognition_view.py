@@ -111,7 +111,7 @@ def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
         # Run inference
         results = yolo.predict(image, conf=conf_threshold)
         
-    if not results or len(results[0].boxes) == 0:
+    if not results:
         st.info("No LEGO pieces detected in this image.")
         st.image(image, use_container_width=True)
         return
@@ -120,6 +120,13 @@ def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
     
     # Check if we have OBB (Oriented Bounding Boxes) from yolo11-obb model
     use_obb = hasattr(result, 'obb') and result.obb is not None
+    
+    num_detections = len(result.obb) if use_obb else (len(result.boxes) if result.boxes is not None else 0)
+    
+    if num_detections == 0:
+        st.info("No LEGO pieces detected in this image.")
+        st.image(image, use_container_width=True)
+        return
     
     if use_obb:
         # Extract 8-coordinate polygons
