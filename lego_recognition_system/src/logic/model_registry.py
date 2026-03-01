@@ -25,9 +25,22 @@ def check_local_model(project_root: str, ldraw_id: str) -> dict:
     if os.path.exists(yolo_dir):
         has_yolo = any(f.endswith('.pt') for f in os.listdir(yolo_dir))
         
-    has_vector = os.path.exists(os.path.join(piezas_dir, f"{ldraw_id}.pkl"))
+    has_vector = False
+    master_meta = os.path.join(piezas_dir, "lego_meta.pkl")
+    if os.path.exists(master_meta):
+        try:
+            import pickle
+            with open(master_meta, 'rb') as f:
+                data = pickle.load(f)
+                metadata = data.get('metadata', [])
+                has_vector = any(m.get('ldraw_id') == str(ldraw_id) for m in metadata)
+        except: pass
     
-    # In Strategy C, it's 'complete' if we have the vector. YOLO is universal.
+    # Check individual .index for legacy support
+    if not has_vector:
+        has_vector = os.path.exists(os.path.join(piezas_dir, f"{ldraw_id}.index"))
+    
+    # In Strategy C, it's 'complete' if we have the vector entry. YOLO is universal.
     return {"ldraw_id": ldraw_id, "has_yolo": has_yolo, "has_vector": has_vector, "is_complete": has_vector}
 
 

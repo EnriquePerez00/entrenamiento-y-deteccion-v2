@@ -1,6 +1,7 @@
 ultralytics
+gradio
+torch
+numpy
+sam2 @ git+https://github.com/facebookresearch/segment-anything-2.git
+pillow
 pandas
-requests
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib

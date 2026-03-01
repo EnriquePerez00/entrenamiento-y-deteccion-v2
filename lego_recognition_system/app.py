@@ -2,12 +2,15 @@ import streamlit as st
 import os
 import sys
 
+# Fix for macOS: "OMP: Error #15: Initializing libomp.dylib, but found libomp.dylib already initialized."
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
 # Ensure src is in the python path
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from src.gui.recognition_view import render_recognition_ui
+from src.gui.recognition_view import render_recognition_ui, render_sidebar_model_status
 from src.gui.launcher_view import render_launcher_ui
 
 st.set_page_config(
@@ -20,48 +23,73 @@ st.set_page_config(
 def main():
     st.sidebar.title("🧩 LEGO Vision AI")
     st.sidebar.markdown("---")
-    
-    app_mode = st.sidebar.selectbox("Selecciona aplicación:", ["🚀 Entrenamiento (Launchpad)", "🔍 Reconocimiento (Test)"])
-    
+
+    app_mode = st.sidebar.selectbox(
+        "Selecciona aplicación:",
+        ["🚀 Entrenamiento (Launchpad)", "🔍 Reconocimiento (Test)"]
+    )
+
     st.sidebar.markdown("---")
-    
+
     if app_mode == "🔍 Reconocimiento (Test)":
         st.sidebar.info(
-            "**Two-Stage Architecture:**\n"
-            "1. **YOLOv11** detects part bounding boxes.\n"
-            "2. **Vector Search** classifies the cropped parts."
+            "**Arquitectura 2 etapas:**\n"
+            "1. **YOLOv11-Seg** detecta bounding boxes.\n"
+            "2. **Búsqueda vectorial** clasifica cada pieza."
         )
+
+        models_dir = os.path.join(PROJECT_ROOT, "models")
+
+        # Cargar modelos proactivamente
+        # Cargar modelos y actualizar estado (incluso si hay cache hit)
+        from src.gui.recognition_view import load_models
+        _, _, _, status = load_models(models_dir)
+        st.session_state["model_status"] = status
         
-        # Check if models exist
-        yolo_model_path = os.path.join(PROJECT_ROOT, "training_results", "train", "weights", "best.pt")
-        if not os.path.exists(yolo_model_path):
-            yolo_model_path = os.path.join(PROJECT_ROOT, "yolo11n.pt")
-            st.sidebar.warning("⚠️ Trained YOLO model not found. Using base yolo11n.pt for demonstration.")
-            
-        index_path = os.path.join(PROJECT_ROOT, "training_results", "75078-1_vector_index.pkl")
-        if not os.path.exists(index_path):
-            index_path = os.path.join(PROJECT_ROOT, "models", "75078-1_vector_index.pkl")
-            if not os.path.exists(index_path):
-                 st.sidebar.warning("⚠️ Vector Index not found. Classification results will be empty.")
-                 index_path = None
-        
-        st.sidebar.subheader("Model Configuration")
-        conf_threshold = st.sidebar.slider("YOLO Confidence Threshold", 0.1, 1.0, 0.4, 0.05)
-        
-        st.title("Interactive Part Recognition")
-        st.markdown("Upload an image to test the 2-stage recognition pipeline.")
-        
-        uploaded_file = st.file_uploader("Choose an image (JPG/PNG)", type=["jpg", "jpeg", "png"])
-        
+        # Mostrar el estado en la barra lateral
+        render_sidebar_model_status()
+
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("⚙️ Configuración")
+        conf_threshold = st.sidebar.slider(
+            "Umbral de confianza YOLO",
+            min_value=0.05,
+            max_value=1.0,
+            value=0.15,       # ← lowered from 0.4
+            step=0.05,
+            help="Valores bajos (0.10–0.20) son recomendados para el modelo universal."
+        )
+
+        st.title("🔍 Reconocimiento Interactivo de Piezas")
+        st.markdown("Sube una imagen para ejecutar el pipeline de reconocimiento de 2 etapas.")
+
+        uploaded_file = st.file_uploader(
+            "Elige una imagen (JPG/PNG)",
+            type=["jpg", "jpeg", "png"]
+        )
+
         if uploaded_file is not None:
-            render_recognition_ui(uploaded_file, yolo_model_path, index_path, conf_threshold)
+            render_recognition_ui(uploaded_file, models_dir, conf_threshold)
         else:
             test_img_path = os.path.join(PROJECT_ROOT, "temp_query.jpg")
             if os.path.exists(test_img_path):
-                st.info("No image uploaded. Here is a sample query.")
+                st.info("No hay imagen subida. Usando muestra 'temp_query.jpg'.")
                 with open(test_img_path, "rb") as f:
-                    render_recognition_ui(f, yolo_model_path, index_path, conf_threshold)
-                    
+                    render_recognition_ui(f, models_dir, conf_threshold)
+            else:
+                st.markdown(
+                    """
+                    ### 📷 Cómo usar este módulo
+
+                    1. Usa el **slider de confianza** (panel izquierdo) — recomendado: `0.10`–`0.20`
+                    2. Sube una imagen con piezas LEGO
+                    3. El sistema detectará las piezas y mostrará las 3 más similares del índice
+
+                    > 💡 **Tip:** El modelo fue entrenado con imágenes sintéticas de Blender.
+                    > Las mejores detecciones se logran con fondos neutros y buena iluminación.
+                    """
+                )
+
     elif app_mode == "🚀 Entrenamiento (Launchpad)":
         render_launcher_ui(PROJECT_ROOT)
 

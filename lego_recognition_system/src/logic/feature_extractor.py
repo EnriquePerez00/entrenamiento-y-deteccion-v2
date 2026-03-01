@@ -6,6 +6,10 @@ from PIL import Image
 import numpy as np
 import os
 import ssl
+import warnings
+
+# Suppress xFormers warning (not applicable for Mac/MPS)
+warnings.filterwarnings("ignore", message=".*xFormers is not available.*")
 
 # Inject proper certificates globally for PyTorch Hub downloads (MacOS Fix)
 import certifi
@@ -14,24 +18,39 @@ os.environ['SSL_CERT_FILE'] = certifi.where()
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
 class FeatureExtractor:
-    def __init__(self, model_name='mobilenet_v3_small'):
+    def __init__(self, model_name='dinov2_vits14'):
+        # Optimize for M4: Priority CUDA -> MPS (Metal) -> CPU
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        elif torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+        else:
+            self.device = torch.device("cpu")
+        
         # Load a pre-trained model for feature extraction
-        if model_name == 'mobilenet_v3_small':
+        if model_name == 'dinov2_vits14':
+            # DINOv2 ViT-Small (384 dimensions), highly optimized for T4
+            self.model = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
+            self.feature_dim = 384
+        elif model_name == 'dinov2_vitl14':
+            # DINOv2 ViT-Large (1024 dimensions), high descriptor quality
+            print("🚀 Loading HEAVY Descriptor Model: DINOv2 ViT-L (1024 dims)...")
+            self.model = torch.hub.load('facebookresearch/dinov2', 'dinov2_vitl14')
+            self.feature_dim = 1024
+        elif model_name == 'mobilenet_v3_small':
             base_model = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT)
-            # Remove the classifier head to get the pooling layer output
             self.model = base_model.features
             self.avgpool = base_model.avgpool
-            self.feature_dim = 576 # Standard for MobileNetV3 Small features
+            self.feature_dim = 576
         elif model_name == 'resnet50':
             base_model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
             self.model = nn.Sequential(*list(base_model.children())[:-1])
             self.feature_dim = 2048
         
         self.model.eval()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         
-        # Standard ImageNet transforms
+        # Standard ImageNet transforms, ensuring 224x224 (multiple of 14 for ViT)
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -52,6 +71,20 @@ class FeatureExtractor:
             features = torch.flatten(features, 1)
             
         return features.cpu().numpy().flatten()
+
+    def get_embedding_with_color(self, image, color_id: int = -1):
+        """
+        Get geometry embedding concatenated with color one-hot vector.
+        
+        Returns:
+            np.ndarray of shape (feature_dim + NUM_COLORS,)
+        """
+        from src.logic.lego_colors import get_color_onehot
+        
+        geo_embedding = self.get_embedding(image)
+        color_onehot = get_color_onehot(color_id)
+        
+        return np.concatenate([geo_embedding, color_onehot])
 
     def get_batch_embeddings(self, images):
         """Batch processing for speed."""

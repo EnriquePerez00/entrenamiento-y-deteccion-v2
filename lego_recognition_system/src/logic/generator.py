@@ -174,39 +174,91 @@ class SyntheticGenerator:
                 progress = int((total_current / num_images) * 100)
                 yield progress, None
                 
-            # Post-Processing: Merge Images
-            # Move all images from temp_parts/worker_X/images to target folder
+            # Post-Processing: Merge Images, Labels, and Metadata
             final_images_dir = self.output_dir / set_id / "images"
             final_labels_dir = self.output_dir / set_id / "labels"
+            final_meta_path = self.output_dir / set_id / "image_meta.jsonl"
+            
             # Clear old if exists (re-run)
             if final_images_dir.exists(): shutil.rmtree(final_images_dir)
             if final_labels_dir.exists(): shutil.rmtree(final_labels_dir)
+            if final_meta_path.exists(): final_meta_path.unlink()
             
             final_images_dir.mkdir(parents=True, exist_ok=True)
             final_labels_dir.mkdir(parents=True, exist_ok=True)
             
             global_index = 0
+            merged_meta_entries = []
+            
             for i in range(num_workers):
                 worker_path = self.output_dir / set_id / "temp_parts" / f"worker_{i}"
-                w_images = sorted(list((worker_path / "images").glob("*.png")))
-                w_labels = sorted(list((worker_path / "labels").glob("*.txt")))
+                if not worker_path.exists(): continue
                 
+                w_images = sorted(list((worker_path / "images").glob("*.jpg")))
+                w_labels = sorted(list((worker_path / "labels").glob("*.txt")))
+                w_meta_path = worker_path / "image_meta.jsonl"
+                
+                # Load worker metadata if exists
+                worker_meta = {}
+                if w_meta_path.exists():
+                    with open(w_meta_path, 'r') as f:
+                        for line in f:
+                            try:
+                                entry = json.loads(line)
+                                worker_meta[entry['img']] = entry['ids']
+                            except: continue
+
                 for img_path, lbl_path in zip(w_images, w_labels):
-                    new_name = f"img_{global_index:04d}"
-                    shutil.move(str(img_path), str(final_images_dir / f"{new_name}.png"))
-                    shutil.move(str(lbl_path), str(final_labels_dir / f"{new_name}.txt"))
+                    new_base = f"img_{global_index:04d}"
+                    new_img_name = f"{new_base}.jpg"
+                    
+                    # Move files
+                    shutil.move(str(img_path), str(final_images_dir / new_img_name))
+                    shutil.move(str(lbl_path), str(final_labels_dir / f"{new_base}.txt"))
+                    
+                    # Remap metadata
+                    old_img_name = img_path.name
+                    if old_img_name in worker_meta:
+                        merged_meta_entries.append({
+                            "img": new_img_name,
+                            "ids": worker_meta[old_img_name]
+                        })
+                    
                     global_index += 1
                 
                 # Cleanup worker folder
-                if worker_path.exists():
-                     shutil.rmtree(worker_path)
+                shutil.rmtree(worker_path)
             
+            # Write merged metadata
+            if merged_meta_entries:
+                with open(final_meta_path, 'w') as f:
+                    for entry in merged_meta_entries:
+                        f.write(json.dumps(entry) + "\n")
+            
+            # Create final data.yaml
+            data_yaml_path = self.output_dir / set_id / "data.yaml"
+            is_universal = os.environ.get("UNIVERSAL_DETECTOR", "0") == "1"
+            
+            with open(data_yaml_path, 'w') as f:
+                f.write(f"path: {os.path.abspath(self.output_dir / set_id)}\n")
+                f.write("train: images\n")
+                f.write("val: images\n")
+                f.write("\n")
+                if is_universal:
+                    f.write("nc: 1\n")
+                    f.write("names: ['lego']\n")
+                else:
+                    f.write(f"nc: {len(part_list)}\n")
+                    # Use ldraw_id for names
+                    names = [p['ldraw_id'] for p in part_list]
+                    f.write(f"names: {names}\n")
+
             # Cleanup temp parent
             temp_parts = self.output_dir / set_id / "temp_parts"
             if temp_parts.exists():
                 temp_parts.rmdir()
             
-            yield 100, f"Done. Generated {global_index} images."
+            yield 100, f"Done. Generated {global_index} images and verified metadata."
             
         except Exception as e:
             yield -1, str(e)

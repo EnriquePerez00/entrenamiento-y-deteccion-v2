@@ -3,6 +3,9 @@ import sys
 import json
 import os
 import random
+import time
+import shutil
+from pathlib import Path
 import math
 from mathutils import Vector, Euler
 
@@ -14,18 +17,41 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 if script_dir not in sys.path:
     sys.path.append(script_dir)
 
-def setup_render_engine():
-    """Configure render engine. Uses CYCLES with OPTIX/CUDA hardware ray tracing."""
+def setup_render_engine(engine='CYCLES', resolution=(2048, 2048)):
+    """Configure render engine. Uses CYCLES or EEVEE_NEXT with optimized settings."""
     scene = bpy.context.scene
-    print("🛠️ Configuring Render Engine: CYCLES")
+    print(f"🛠️ Configuring Render Engine: {engine} | Res: {resolution}")
     
     # Common render settings
-    scene.render.resolution_x = 960
-    scene.render.resolution_y = 960
+    scene.render.resolution_x = resolution[0]
+    scene.render.resolution_y = resolution[1]
     scene.render.resolution_percentage = 100
     
-    # CYCLES: Force OptiX (>30% faster than CUDA on T4 Turing). 
-    # CUDA_VISIBLE_DEVICES is set per-worker in the calling subprocess.
+    if engine.upper() == 'EEVEE':
+        # Try different EEVEE internal names (Blender 4.2+ vs Blender 3.x/5.0+)
+        eevee_names = ['BLENDER_EEVEE_NEXT', 'BLENDER_EEVEE']
+        set_success = False
+        for ee_name in eevee_names:
+            try:
+                scene.render.engine = ee_name
+                set_success = True
+                break
+            except TypeError:
+                continue
+        
+        if not set_success:
+            print("  ⚠️ EEVEE not found in this version. Falling back to CYCLES.")
+            scene.render.engine = 'CYCLES'
+        else:
+            # Basic enhancements for EEVEE
+            if hasattr(scene, "eevee"):
+                scene.eevee.use_shadows = True
+                if hasattr(scene.eevee, "use_raytracing"):
+                    scene.eevee.use_raytracing = True
+            print(f"  ⚡ EEVEE ({scene.render.engine}) mode activated.")
+        return
+
+    # CYCLES Settings
     scene.render.engine = 'CYCLES'
     scene.cycles.device = 'GPU'
     prefs = bpy.context.preferences
@@ -33,28 +59,52 @@ def setup_render_engine():
     cprefs.get_devices()
     
     device_configured = False
-    # OptiX first (hardware ray tracing), then CUDA, then METAL
-    for device_type in ['OPTIX', 'CUDA', 'METAL']:
-        try:
-            cprefs.compute_device_type = device_type
-            for device in cprefs.devices:
-                if device.type != 'CPU':
-                    device.use = True
-                    device_configured = True
-            if device_configured:
-                print(f"  🔬 CYCLES: {device_type} hardware ray-tracing activated.")
-                break
-        except Exception:
-            pass
+    
+    # Apple Silicon M4 Strategy: Force METAL with Hardware Ray Tracing (MetalRT)
+    # Also attempt HYBRID rendering (GPU + CPU) since they share memory.
+    try:
+        cprefs.compute_device_type = 'METAL'
+        for device in cprefs.devices:
+            # Enable ALL devices for hybrid rendering (CPU + GPU)
+            device.use = True
+            device_configured = True
+            print(f"  🎨 DEVICE ENABLED: {device.name} ({device.type})")
+        
+        # Enable Hardware Ray Tracing if supported (M2/M3/M4)
+        if hasattr(cprefs, "use_metalrt"):
+            cprefs.use_metalrt = True
+            print("  🚀 METAL RT: Hardware Ray Tracing activated!")
+            
+    except Exception as e:
+        print(f"  ⚠️ Error configuring custom METAL setup: {e}")
+        
+    if not device_configured:
+        # Fallback for standard PC configurations
+        for device_type in ['OPTIX', 'CUDA']:
+            try:
+                cprefs.compute_device_type = device_type
+                for device in cprefs.devices:
+                    if device.type != 'CPU':
+                        device.use = True
+                        device_configured = True
+                if device_configured:
+                    print(f"  🔬 CYCLES: Fallback to {device_type} hardware ray-tracing.")
+                    break
+            except Exception:
+                pass
     
     if not device_configured:
         print("  ⚠️ CYCLES: No GPU found, falling back to CPU.")
         scene.cycles.device = 'CPU'
     
     # Eco-Mode: fast rendering, try AI denoising if supported by this Blender version
-    scene.cycles.samples = 64  # Increased for higher quality without sacrificing much time on dual GPUs
+    scene.cycles.samples = 64  
     scene.cycles.use_adaptive_sampling = True
-    scene.cycles.adaptive_threshold = 0.1
+    # 0.01 threshold (high precision "real resolution" for maximum detail)
+    scene.cycles.adaptive_threshold = 0.05
+    
+    # glossy_bounces=2 to capture specular highlights on LEGO studs and edges
+    scene.cycles.glossy_bounces = 2
     
     # Try to enable AI denoising — Blender 3.x and 4.x have different APIs
     denoiser_set = False
@@ -71,11 +121,21 @@ def setup_render_engine():
         scene.cycles.use_denoising = False
         print("  ℹ️ Denoising not supported on this Blender version. Disabled.")
     
-    # Minimal bounces for speed
+    # 📸 Output Format: JPEG (Quality 90) for storage efficiency
+    scene.render.image_settings.file_format = 'JPEG'
+    scene.render.image_settings.quality = 90
+    print("  🖼️ Output Format: JPEG (Quality: 90) active.")
+    
+    # Minimal bounces for speed - Use safe attribute setting for version compatibility
+    def set_safe(obj, attr, val):
+        if hasattr(obj, attr):
+            setattr(obj, attr, val)
+            
     scene.cycles.max_bounces = 2
     scene.cycles.diffuse_bounces = 1
     scene.cycles.glossy_bounces = 1
-    scene.cycles.transparent_bounces = 2
+    set_safe(scene.cycles, 'transparent_max_bounces', 2) # New versions
+    set_safe(scene.cycles, 'transparent_bounces', 2)     # Older versions
     scene.cycles.transmission_bounces = 0
     scene.cycles.caustics_reflective = False
     scene.cycles.caustics_refractive = False
@@ -85,7 +145,10 @@ def setup_render_engine():
     # Disable tiling to let the GPU render the whole frame at once. CPU doesn't have to interrupt the GPU.
     scene.cycles.use_auto_tile = False
     
-    print("  ⚡ Cycles Eco-Mode: 64 samples + OptiX denoising. Tiling DISABLED (Full frame rendering).")
+    # 🎞️ Film transparency enabled to allow compositing over a background image
+    scene.render.film_transparent = True
+    
+    print("  ⚡ Cycles Eco-Mode: 64 samples + OptiX denoising. Tiling DISABLED. Film Transparent ENABLED.")
 
 def register_ldraw_addon(addon_path=None):
     """Register the ImportLDraw addon from a dynamic path or local script dir."""
@@ -112,6 +175,31 @@ def register_ldraw_addon(addon_path=None):
             mod.register()
             print(f"✅ Addon registered successfully via module: {module_name}")
             success = True
+            
+            # Monkeypatch for Blender 4.0+ compatibility (ImportLDraw fix)
+            # The addon uses ShaderNodeSeparateHSV which is now ShaderNodeSepColor
+            if bpy.app.version >= (4, 0, 0):
+                print("🐒 Monkeypatching NodeTreeNodes.new for Blender 4.0+ compatibility...")
+                
+                orig_new = bpy.types.NodeTreeNodes.new
+                
+                def patched_new(self, node_type):
+                    if node_type == 'ShaderNodeSeparateHSV':
+                        # In Blender 5.0 it is ShaderNodeSeparateColor
+                        # In Blender 4.x it might be ShaderNodeSepColor or ShaderNodeSeparateColor
+                        actual_name = 'ShaderNodeSeparateColor' if 'ShaderNodeSeparateColor' in dir(bpy.types) else 'ShaderNodeSepColor'
+                        node = orig_new(self, actual_name)
+                        node.mode = 'HSV'
+                        return node
+                    if node_type == 'ShaderNodeSeparateRGB':
+                        actual_name = 'ShaderNodeSeparateColor' if 'ShaderNodeSeparateColor' in dir(bpy.types) else 'ShaderNodeSepColor'
+                        node = orig_new(self, actual_name)
+                        node.mode = 'RGB'
+                        return node
+                    return orig_new(self, node_type)
+                
+                # Apply the patch to the class
+                bpy.types.NodeTreeNodes.new = patched_new
             break
         except Exception as e:
             import_errors.append(f"{module_name}: {e}")
@@ -133,16 +221,37 @@ def clean_scene():
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
 
+def set_origin_to_center(obj):
+    """Sets the origin of the object to its geometric center.
+    This is critical because LDraw origins are often at the top/bottom or far from center,
+    causing rotations to be eccentric or physics to biastype towards certain faces.
+    """
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+    # Origin to Geometry (Center of Mass / Bounds Center)
+    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
+    obj.select_set(False)
+    print(f"  🎯 Origin centered for {obj.name}")
+
 def setup_camera():
-    """Create and return a camera object."""
-    bpy.ops.object.camera_add(location=(0, 0, 10))
+    """Create a camera at 70cm height with 50mm lens to cover 50x50cm surface."""
+    # Camera at 70cm (0.7 units) to match user requirement
+    bpy.ops.object.camera_add(location=(0, 0, 0.7))
     cam = bpy.context.object
-    cam.data.lens = 50
+    cam.data.lens = 50             # 50mm at 0.7m covers ~50cm width on 36mm sensor
+    cam.data.sensor_width = 36.0   # Full-frame equivalent
+    
+    # Sharp Focus at 70cm
+    cam.data.dof.use_dof = True
+    cam.data.dof.focus_distance = 0.7  # Sharp on the ground/surface
+    cam.data.dof.aperture_fstop = 11.0 # f/11 for deep focus (keeps piece tops sharp)
+    cam.data.dof.aperture_blades = 7
+    
     bpy.context.scene.camera = cam
     return cam
 
 def setup_lighting():
-    """Create random lighting setup."""
+    """Create realistic randomized lighting. 5 presets simulating real environments."""
     # Delete existing lights
     bpy.ops.object.select_all(action='DESELECT')
     for obj in bpy.context.scene.objects:
@@ -150,36 +259,506 @@ def setup_lighting():
             obj.select_set(True)
     bpy.ops.object.delete()
 
-    # Create Key Light
-    bpy.ops.object.light_add(type='AREA', location=(random.uniform(-5, 5), random.uniform(-5, 5), random.uniform(5, 10)))
-    key_light = bpy.context.object
-    key_light.data.energy = random.uniform(500, 2500) # Increased dynamic range (was 800-1500)
-    key_light.data.color = (random.uniform(0.7, 1.0), random.uniform(0.7, 1.0), random.uniform(0.7, 1.0)) # Stronger color tints
-    key_light.scale = (random.uniform(2, 6), random.uniform(2, 6), 1)
+    # --- Pick one of realistic scenarios ---
+    # favoring environments where the HDRI dominates
+    scenario = random.choice(['overhead', 'warm_side', 'cool_mixed', 'overcast', 'harsh', 'hdri_only', 'hdri_only'])
 
-    # Fill Light
-    bpy.ops.object.light_add(type='POINT', location=(random.uniform(-5, 5), random.uniform(-5, 5), random.uniform(2, 5)))
-    fill_light = bpy.context.object
-    fill_light.data.energy = random.uniform(50, 800)
+    if scenario == 'hdri_only':
+        print("  🌍 Scenario: Pure HDRI illumination.")
+        return scenario
+
+    if scenario == 'overhead':
+        # Studio overhead panel
+        bpy.ops.object.light_add(type='AREA', location=(0, 0, 1.5))
+        key = bpy.context.object
+        key.data.energy = random.uniform(500, 1000)
+        key.data.color = (1.0, random.uniform(0.92, 1.0), random.uniform(0.85, 1.0))
+        key.scale = (1.5, 1.5, 1)
+        # Weak fill from side
+        bpy.ops.object.light_add(type='POINT', location=(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), 0.8))
+        fill = bpy.context.object
+        fill.data.energy = random.uniform(50, 300)
+
+    elif scenario == 'warm_side':
+        # Warm sunlight from one side
+        bpy.ops.object.light_add(type='AREA', location=(random.uniform(1.0, 1.5), random.uniform(-0.5, 0.5), random.uniform(0.8, 1.2)))
+        key = bpy.context.object
+        key.data.energy = random.uniform(800, 1500)
+        key.data.color = (1.0, random.uniform(0.75, 0.90), random.uniform(0.55, 0.75))  # warm orange
+        key.scale = (random.uniform(0.5, 1.0), random.uniform(0.5, 1.0), 1)
+        key.rotation_euler = (0, random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
+        # Soft fill opposite side
+        bpy.ops.object.light_add(type='AREA', location=(-random.uniform(0.8, 1.2), 0, random.uniform(0.7, 1.0)))
+        fill = bpy.context.object
+        fill.data.energy = random.uniform(100, 500)
+        fill.data.color = (random.uniform(0.7, 0.9), random.uniform(0.8, 1.0), 1.0)  # cool blue fill
+
+    elif scenario == 'cool_mixed':
+        # Multiple colored lights
+        bpy.ops.object.light_add(type='SPOT', location=(-1.2, 1.2, 1.0))
+        l1 = bpy.context.object
+        l1.data.energy = 800
+        l1.data.color = (0.7, 0.8, 1.0) # Cool blue
+        bpy.ops.object.light_add(type='POINT', location=(1.0, -1.0, 0.8))
+        l2 = bpy.context.object
+        l2.data.energy = 500
+        l2.data.color = (1.0, 0.8, 0.7) # Warm orange
+        bpy.ops.object.light_add(type='AREA', location=(0, 0, 1.5))
+        l3 = bpy.context.object
+        l3.data.energy = 300
+        l3.data.color = (0.9, 1.0, 0.9) # Greenish fill
+        l3.scale = (1.0, 1.0, 1)
+
+    elif scenario == 'overcast':
+        # Soft/diffuse: simulate cloudy day, multiple weak lights
+        for _ in range(3):
+            bpy.ops.object.light_add(type='AREA', location=(
+                random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8), random.uniform(1.0, 1.5)))
+            l = bpy.context.object
+            l.data.energy = random.uniform(100, 300)
+            l.data.color = (random.uniform(0.9, 1.0), random.uniform(0.9, 1.0), random.uniform(0.9, 1.0))
+            l.scale = (random.uniform(4, 8), random.uniform(4, 8), 1)
+
+    else:  # harsh
+        # Single strong point — simulates smartphone flash or task lamp
+        bpy.ops.object.light_add(type='SPOT', location=(
+            random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), random.uniform(0.8, 1.2)))
+        key = bpy.context.object
+        key.data.energy = random.uniform(500, 1500)
+        key.data.spot_size = random.uniform(0.5, 1.2)
+        key.data.color = (1.0, random.uniform(0.88, 1.0), random.uniform(0.80, 1.0))
+        # Very subtle fill to avoid pure black shadows
+        bpy.ops.object.light_add(type='POINT', location=(0, 0, 0.7))
+        fill = bpy.context.object
+        fill.data.energy = random.uniform(20, 100)
+
+    print(f"  💡 Lighting scenario: '{scenario}'")
     
-    return key_light, fill_light
+    # --- EEVEE Contact Shadows: Activate on all lights to darken contact points ---
+    for obj in bpy.context.scene.objects:
+        if obj.type == 'LIGHT':
+            light = obj.data
+            # Contact Shadows (EEVEE only, safe to set even in CYCLES)
+            if hasattr(light, 'use_contact_shadow'):
+                light.use_contact_shadow = True
+                light.contact_shadow_distance = 0.05  # 5cm range
+                light.contact_shadow_thickness = 0.005
+            # Soften shadows with larger light radius/size
+            if light.type == 'POINT' or light.type == 'SPOT':
+                if hasattr(light, 'shadow_soft_size'):
+                    light.shadow_soft_size = max(light.shadow_soft_size, 0.05)
+            elif light.type == 'AREA':
+                if hasattr(light, 'size'):
+                    light.size = max(light.size, 0.3)
+    
+    return scenario
+
+def setup_compositor():
+    """Add a subtle sensor noise layer to simulate iPhone camera grain.
+    Hyper-robust version for Blender 4.x and 5.x.
+    """
+    print("🎨 Setting up Compositor Post-Processing...")
+    # Prefer direct access to scene data
+    scene = bpy.data.scenes[0] if bpy.data.scenes else bpy.context.scene
+    scene.use_nodes = True
+    
+    # CASE: node_tree/compositing_node_group handling (Blender 5.0 compatibility)
+    tree = None
+    if hasattr(scene, "node_tree"):
+        tree = scene.node_tree
+    elif hasattr(scene, "compositing_node_group"):
+        tree = scene.compositing_node_group
+        
+    if tree is None:
+        print("  🔧 Forced reconstruction of Compositor NodeTree...")
+        try:
+            new_tree = bpy.data.node_groups.new("CompositorNodeTree", "CompositorNodeTree")
+            if hasattr(scene, "node_tree"):
+                scene.node_tree = new_tree
+                tree = scene.node_tree
+            elif hasattr(scene, "compositing_node_group"):
+                scene.compositing_node_group = new_tree
+                tree = scene.compositing_node_group
+        except Exception as e:
+            print(f"  ⚠️ Failed to create new NodeTree: {e}")
+        
+    if tree is None:
+        print("  ❌ CRITICAL: Absolute Compositor failure - No node_tree/compositing_node_group.")
+        return
+
+    nodes = tree.nodes
+    links = tree.links
+    
+    # Clear existing nodes to start fresh
+    try:
+        nodes.clear()
+    except Exception as e:
+        print(f"  ⚠️ Error clearing nodes: {e}")
+
+    def safe_node_new(type_name, label=None):
+        """Try to create a node by various possible names (version compatibility)."""
+        node = None
+        try:
+            node = nodes.new(type=type_name)
+        except:
+            alt_name = type_name.replace('CompositorNode', '')
+            try:
+                node = nodes.new(type=alt_name)
+            except:
+                # Common aliases for Blender 5.0
+                if type_name == 'CompositorNodeComposite':
+                    for fallback in ['NodeGroupOutput', 'CompositorNodeGroupOutput', 'CompositorNodeViewer']:
+                        try:
+                            node = nodes.new(type=fallback)
+                            print(f"    💡 Mapping {type_name} -> {fallback}")
+                            break
+                        except: pass
+                elif type_name == 'CompositorNodeSharpen':
+                    try:
+                        node = nodes.new(type='CompositorNodeFilter')
+                        node.filter_type = 'SHARPEN'
+                        print(f"    💡 Mapping {type_name} -> Filter(SHARPEN)")
+                    except: pass
+        
+        if node and label:
+            node.label = label
+        return node
+
+    # Core nodes
+    render_layers = safe_node_new('CompositorNodeRLayers', 'Render Layers')
+    composite = safe_node_new('CompositorNodeComposite', 'Final Output')
+
+    if not render_layers or not composite:
+        print("  ⚠️ Vital compositor nodes missing. Direct output active.")
+        return
+
+    # --- 📸 REPLICATING iPHONE 16 REALISM (OPTIONAL ENHANCEMENTS) ---
+    def safe_set(obj, attr, val):
+        try: setattr(obj, attr, val)
+        except: pass
+
+    def safe_set_input(node, name_or_idx, val):
+        try:
+            if isinstance(name_or_idx, str):
+                node.inputs[name_or_idx].default_value = val
+            else:
+                node.inputs[name_or_idx].default_value = val
+        except: pass
+
+    # 1. Distort (Lens Imperfections)
+    distort = safe_node_new('CompositorNodeLensdist', 'Lens Imperfections')
+    if distort:
+        safe_set_input(distort, 'Distort', 0.01)
+        safe_set_input(distort, 1, 0.01)
+        safe_set_input(distort, 'Dispersion', 0.02)
+        safe_set_input(distort, 2, 0.02)
+
+    # 2. Glare (Bloom)
+    glare = safe_node_new('CompositorNodeGlare', 'Lens Bloom')
+    if glare:
+        safe_set(glare, 'glare_type', 'FOG_GLOW')
+        safe_set(glare, 'glare_quality', 'HIGH')
+        safe_set(glare, 'quality', 'HIGH')
+
+    # 3. Grain (Sensor Mix)
+    noise_mix = safe_node_new('CompositorNodeMixRGB', 'Sensor Grain Mix')
+    noise_tex = None
+    if noise_mix:
+        safe_set(noise_mix, 'blend_type', 'OVERLAY')
+        safe_set_input(noise_mix, 'Fac', 0.05)
+        safe_set_input(noise_mix, 0, 0.05)
+        try:
+            noise_tex = nodes.new(type='CompositorNodeTexture')
+            if "SensorNoise" not in bpy.data.textures:
+                tex = bpy.data.textures.new("SensorNoise", type='NOISE')
+                if hasattr(tex, 'noise_scale'): tex.noise_scale = 0.005
+            noise_tex.texture = bpy.data.textures["SensorNoise"]
+        except: pass
+
+    # --- Linking Logic (CHAIN: Render -> Distort -> Glare -> Grain -> Composite) ---
+    try:
+        last_out = render_layers.outputs[0]
+        
+        if distort:
+            links.new(last_out, distort.inputs[0])
+            last_out = distort.outputs[0]
+
+        if glare:
+            links.new(last_out, glare.inputs[0])
+            last_out = glare.outputs[0]
+            
+        if noise_mix and noise_tex:
+            links.new(last_out, noise_mix.inputs[1])
+            links.new(noise_tex.outputs[0], noise_mix.inputs[2])
+            last_out = noise_mix.outputs[0]
+            
+        # Final connection
+        links.new(last_out, composite.inputs[0])
+    except Exception as e:
+        print(f"  ⚠️ Logic Error linking nodes: {e}")
+        # Emergency bypass
+        try: links.new(render_layers.outputs[0], composite.inputs[0])
+        except: pass
+        if viewer:
+            try: links.new(last_out, viewer.inputs[0])
+            except: pass
+            
+        print("  ✅ Compositor graph built successfully.")
+        
+    except Exception as e:
+        print(f"  ⚠️ Error in compositor wiring: {e}")
+        try: links.new(render_layers.outputs[0], composite.inputs[0])
+        except: pass
 
 
-def import_ldraw_part(filepath, ldraw_lib=None):
-    """Import LDraw part using ImportLDraw addon."""
+def setup_world_hdri(assets_dir):
+    """Sets a random HDRI from assets_dir/hdri as the world background."""
+    hdri_dir = os.path.join(assets_dir, "hdri")
+    if not os.path.exists(hdri_dir):
+        # Fallback to backgrounds folder
+        hdri_dir = os.path.join(assets_dir, "backgrounds")
+        if not os.path.exists(hdri_dir):
+            return
+
+    hdri_files = [f for f in os.listdir(hdri_dir) if f.lower().endswith(('.hdr', '.exr'))]
+    if not hdri_files:
+        return
+
+    hdri_path = os.path.join(hdri_dir, random.choice(hdri_files))
+    print(f"🌍 Applying HDRI Background: {hdri_path}")
+
+    # Configure World Nodes
+    if not bpy.context.scene.world:
+        bpy.context.scene.world = bpy.data.worlds.new("World")
+    
+    world = bpy.context.scene.world
+    world.use_nodes = True
+    nodes = world.node_tree.nodes
+    links = world.node_tree.links
+    nodes.clear()
+
+    node_out = nodes.new(type='ShaderNodeOutputWorld')
+    node_bg = nodes.new(type='ShaderNodeBackground')
+    node_env = nodes.new(type='ShaderNodeTexEnvironment')
+    node_mapping = nodes.new(type='ShaderNodeMapping')
+    node_coord = nodes.new(type='ShaderNodeTexCoord')
+
+    try:
+        node_env.image = bpy.data.images.load(hdri_path)
+    except Exception as e:
+        print(f"  ❌ Error loading HDRI: {e}")
+        return
+
+    links.new(node_coord.outputs['Generated'], node_mapping.inputs['Vector'])
+    links.new(node_mapping.outputs['Vector'], node_env.inputs['Vector'])
+    links.new(node_env.outputs['Color'], node_bg.inputs['Color'])
+    links.new(node_bg.outputs['Background'], node_out.inputs['Surface'])
+
+    # Random Z Rotation and Intensity
+    node_mapping.inputs['Rotation'].default_value[2] = random.uniform(0, 6.28)
+    node_bg.inputs['Strength'].default_value = random.uniform(0.6, 1.4)
+    print(f"  ✨ HDRI Strength: {node_bg.inputs['Strength'].default_value:.2f}")
+
+
+def setup_ground_texture(ground_obj, assets_dir):
+    """Sets a random texture from assets_dir/backgrounds for the ground plane."""
+    bg_dir = os.path.join(assets_dir, "backgrounds")
+    if not os.path.exists(bg_dir):
+        return
+
+    bg_files = [f for f in os.listdir(bg_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff'))]
+    if not bg_files:
+        return
+
+    bg_path = os.path.join(bg_dir, random.choice(bg_files))
+    print(f"🖼️ Applying Ground Texture: {bg_path}")
+
+    # Get or Create Material
+    if not ground_obj.data.materials:
+        mat = bpy.data.materials.new(name="GroundMaterial")
+        ground_obj.data.materials.append(mat)
+    else:
+        mat = ground_obj.data.materials[0]
+
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+
+    node_out = nodes.new(type='ShaderNodeOutputMaterial')
+    node_bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+    node_tex = nodes.new(type='ShaderNodeTexImage')
+    node_mapping = nodes.new(type='ShaderNodeMapping')
+    node_coord = nodes.new(type='ShaderNodeTexCoord')
+
+    try:
+        node_tex.image = bpy.data.images.load(bg_path)
+    except Exception as e:
+        print(f"  ❌ Error loading ground texture: {e}")
+        return
+
+    links.new(node_coord.outputs['UV'], node_mapping.inputs['Vector'])
+    links.new(node_mapping.outputs['Vector'], node_tex.inputs['Vector'])
+    links.new(node_tex.outputs['Color'], node_bsdf.inputs['Base Color'])
+    links.new(node_bsdf.outputs['BSDF'], node_out.inputs['Surface'])
+
+    # Randomized Rotation and Roughness
+    node_mapping.inputs['Rotation'].default_value[2] = random.choice([0, 1.57, 3.14, 4.71])
+    node_bsdf.inputs['Roughness'].default_value = random.uniform(0.6, 1.0)
+    
+def _apply_bevel_to_mesh(obj):
+    """Add a bevel modifier to all meshes in hierarchy for realistic edge specular highlights.
+    
+    This makes LEGO stud edges and part boundaries catch light and cast micro-shadows,
+    which dramatically helps distinguish detail in high-resolution renders.
+    """
+    def bevel_object(o):
+        if o.type != 'MESH':
+            for child in o.children:
+                bevel_object(child)
+            return
+        
+        # Avoid adding duplicate modifiers if already beveled
+        if any(m.name == "LEGO_Bevel" for m in o.modifiers):
+            for child in o.children:
+                bevel_object(child)
+            return
+        
+        try:
+            bevel = o.modifiers.new(name="LEGO_Bevel", type='BEVEL')
+            bevel.width = 0.0002       # 0.2mm — subtle, matches real LEGO tolerance
+            bevel.segments = 2         # 2 segments = smooth highlight, not faceted
+            bevel.limit_method = 'ANGLE'  # Only bevel clean edges, protect complex geometry
+            bevel.angle_limit = 0.523  # ~30° — avoids artifacts on non-manifold stud mesh
+            bevel.use_clamp_overlap = True
+        except Exception as e:
+            print(f"  ⚠️ Bevel modifier error on {o.name}: {e}")
+        
+        for child in o.children:
+            bevel_object(child)
+    
+    bevel_object(obj)
+    print(f"  🔷 Bevel modifiers applied to: {obj.name}")
+
+
+def _apply_lego_material(obj, color_id=None):
+    """Override all materials on obj (and children) with official LEGO ABS plastic."""
+    if color_id is None:
+        return
+    try:
+        # Lazy import to avoid errors when lego_colors is not on path
+        from lego_colors_blender import get_blender_rgba
+    except ImportError:
+        try:
+            # Fallback: inline hex lookup for the most common colors
+            _COMMON_COLORS = {
+                0: (0.106, 0.165, 0.204, 1.0),   # Black
+                1: (0.118, 0.353, 0.659, 1.0),   # Blue
+                2: (0.0, 0.522, 0.169, 1.0),     # Green
+                4: (0.706, 0.0, 0.0, 1.0),       # Red
+                14: (0.980, 0.784, 0.039, 1.0),  # Yellow
+                15: (0.957, 0.957, 0.957, 1.0),  # White
+                19: (0.843, 0.729, 0.549, 1.0),  # Tan
+                25: (0.839, 0.475, 0.137, 1.0),  # Orange
+                70: (0.373, 0.192, 0.035, 1.0),  # Reddish Brown
+                71: (0.588, 0.588, 0.588, 1.0),  # Light Bluish Grey
+                72: (0.392, 0.392, 0.392, 1.0),  # Dark Bluish Grey
+            }
+            get_blender_rgba = lambda cid: _COMMON_COLORS.get(cid, (0.8, 0.8, 0.8, 1.0))
+        except:
+            return
+    
+    rgba = get_blender_rgba(color_id)
+    
+    def apply_to_object(o):
+        if o.type == 'MESH' and o.data:
+            # Create or reuse a material
+            mat_name = f"LEGO_Color_{color_id}"
+            mat = bpy.data.materials.get(mat_name)
+            if not mat:
+                mat = bpy.data.materials.new(name=mat_name)
+                mat.use_nodes = True
+                bsdf = mat.node_tree.nodes.get("Principled BSDF")
+                if bsdf:
+                    bsdf.inputs["Base Color"].default_value = rgba
+                    bsdf.inputs["Roughness"].default_value = 0.15  # ABS plastic
+                    bsdf.inputs["IOR"].default_value = 1.45        # ABS refractive index
+                    # Subsurface for plastic translucency
+                    if "Subsurface Weight" in bsdf.inputs:
+                        bsdf.inputs["Subsurface Weight"].default_value = 0.02
+                    elif "Subsurface" in bsdf.inputs:
+                        bsdf.inputs["Subsurface"].default_value = 0.02
+                    
+                    # ✨ Clearcoat: ABS gloss top layer (like factory-applied finish)
+                    if "Coat Weight" in bsdf.inputs:      # Blender 4.x+
+                        bsdf.inputs["Coat Weight"].default_value = 0.1
+                        bsdf.inputs["Coat Roughness"].default_value = 0.05
+                    elif "Clearcoat" in bsdf.inputs:      # Blender 3.x
+                        bsdf.inputs["Clearcoat"].default_value = 0.1
+                        bsdf.inputs["Clearcoat Roughness"].default_value = 0.05
+                    
+                    # 🍄 Noise Roughness: subtle imperfections to avoid mathematically perfect look
+                    # Connects Noise Texture → Math (Add, offset 0.15) → Roughness
+                    try:
+                        nodes = mat.node_tree.nodes
+                        links = mat.node_tree.links
+                        
+                        noise = nodes.new(type='ShaderNodeTexNoise')
+                        noise.inputs['Scale'].default_value = 200.0    # Very fine grain
+                        noise.inputs['Detail'].default_value = 4.0
+                        noise.inputs['Roughness'].default_value = 0.6
+                        noise.inputs['Distortion'].default_value = 0.1
+                        noise.location = (-600, -200)
+                        
+                        # Map 0-1 noise to [roughness-0.02, roughness+0.02] using ColorRamp
+                        ramp = nodes.new(type='ShaderNodeValToRGB')
+                        ramp.color_ramp.elements[0].position = 0.0
+                        ramp.color_ramp.elements[0].color = (0.13, 0.13, 0.13, 1.0)  # min roughness
+                        ramp.color_ramp.elements[1].position = 1.0
+                        ramp.color_ramp.elements[1].color = (0.17, 0.17, 0.17, 1.0)  # max roughness
+                        ramp.location = (-350, -200)
+                        
+                        links.new(noise.outputs['Fac'], ramp.inputs['Fac'])
+                        links.new(ramp.outputs['Color'], bsdf.inputs['Roughness'])
+                        print(f"  🌶️ Noise roughness texture applied for {mat_name}")
+                    except Exception as e:
+                        # Fallback: static roughness if node setup fails
+                        print(f"  ⚠️ Noise texture setup failed ({e}), using static roughness.")
+                        bsdf.inputs["Roughness"].default_value = 0.15
+            
+            # Apply material to all slots
+            o.data.materials.clear()
+            o.data.materials.append(mat)
+        
+        for child in o.children:
+            apply_to_object(child)
+    
+    apply_to_object(obj)
+
+
+def import_ldraw_part(filepath, ldraw_lib=None, color_id=None):
+    """Import LDraw part using ImportLDraw addon. Optionally applies official LEGO color."""
     try:
         # Explicitly pass the library path to the operator
         # Deselect all to ensure we only get the new object
         bpy.ops.object.select_all(action='DESELECT')
 
+        import_kwargs = dict(filepath=filepath, addEnvironment=False, positionCamera=False)
         if ldraw_lib:
-            bpy.ops.import_scene.importldraw(filepath=filepath, ldrawPath=ldraw_lib, addEnvironment=False, positionCamera=False)
-        else:
-            bpy.ops.import_scene.importldraw(filepath=filepath, addEnvironment=False, positionCamera=False)
+            import_kwargs['ldrawPath'] = ldraw_lib
         
-        # The imported object is usually selected
-        # ImportLDraw often imports a hierarchy (Empty -> Mesh). 
-        # We need the root object that contains the mesh or valid dimensions.
+        # NOTE: 'defaultColour' is NOT a valid kwarg in this addon version. 
+        # We rely on _apply_lego_material() instead.
+        
+        bpy.ops.import_scene.importldraw(**import_kwargs)
+        
+        # --- CRITICAL FIX: Addon forces 400 samples on import. Override it back to 64. ---
+        try:
+            bpy.context.scene.cycles.samples = 64
+            bpy.context.scene.cycles.diffuse_bounces = 1
+            bpy.context.scene.cycles.glossy_bounces = 1
+        except: pass
+
         selected = bpy.context.selected_objects
         if not selected:
              return None
@@ -188,6 +767,11 @@ def import_ldraw_part(filepath, ldraw_lib=None):
         obj = selected[0]
         while obj.parent:
             obj = obj.parent
+        
+        # Apply official LEGO material override
+        if color_id is not None:
+            _apply_lego_material(obj, color_id)
+            _apply_bevel_to_mesh(obj)  # Edge highlights for studs and borders
             
         return obj
     except Exception as e:
@@ -309,9 +893,30 @@ def main():
     with open(data_file, 'r') as f:
         data = json.load(f)
 
-    set_id = data['set_id']
-    parts = data['parts'] # List of {ldraw_id, color_id, ...}
-    num_images = data['num_images']
+    set_id = data.get('set_id', 'unknown')
+    
+    # In Universal Detection Plan B, we receive 'pieces_config'
+    # Fallback to 'parts' for backward compatibility
+    pieces_config = data.get('pieces_config', [])
+    if not pieces_config:
+        parts = data.get('parts', [])
+        global_render_engine = data.get('render_engine', 'CYCLES')
+        res_x = data.get('resolution_x', 640)
+        for p in parts:
+            pieces_config.append({
+                'part': p, 'tier': 'UNKNOWN', 'imgs': data.get('num_images', 30),
+                'engine': global_render_engine, 'res': res_x
+            })
+
+    # Derive top-level 'parts' and 'num_images' for other script sections
+    parts = [pc['part'] for pc in pieces_config]
+    
+    # For Strategy C workers, num_images per piece might vary, but for the drop loop
+    # we take the max images requested by any piece in this worker's chunk.
+    num_images = data.get('num_images')
+    if num_images is None:
+        num_images = max([pc.get('imgs', 30) for pc in pieces_config]) if pieces_config else 30
+
     output_base = data.get('output_base', '/content/dataset')
     assets_dir = data.get('assets_dir')
     ldraw_path_base = data.get('ldraw_path') 
@@ -370,91 +975,112 @@ def main():
     os.makedirs(labels_dir, exist_ok=True)
 
     clean_scene()
-    setup_render_engine() # Default and only engine is CYCLES
-    cam = setup_camera()
-    key_light, fill_light = setup_lighting()
     
-    # Setup Color Management to avoid "Colorspace not found" and ensure sRGB standard
-    # effective for training data to match standard camera input
+    # Extract new Tiering parameters
+    # Fallback for old templates
+    global_render_engine = data.get('render_engine', 'CYCLES')
+    res_x = data.get('resolution_x', 640)
+    res_y = data.get('resolution_y', 640)
+    
+    setup_render_engine(engine=global_render_engine, resolution=(res_x, res_y))
+    setup_compositor()  # Sensor noise + bloom glare post-processing
+    cam = setup_camera()
+    setup_lighting()
+    setup_world_hdri(assets_dir)
+    
+    # Setup Color Management — AgX for better dynamic range on white pieces
+    # AgX preserves internal stud shadows even on overexposed whites
     try:
-        bpy.context.scene.view_settings.view_transform = 'Standard'
-        bpy.context.scene.view_settings.look = 'None' 
+        color_set = False
+        for transform in ['AgX', 'Filmic', 'Standard']:
+            try:
+                bpy.context.scene.view_settings.view_transform = transform
+                color_set = True
+                print(f"  🎨 Color Transform: {transform} active.")
+                break
+            except TypeError:
+                continue
+        
+        # Protect whites: slight underexposure so stud sockets stay grey (not blown out)
+        bpy.context.scene.view_settings.exposure = -0.3
+        bpy.context.scene.view_settings.gamma = 1.05
         bpy.context.scene.sequencer_colorspace_settings.name = 'sRGB'
     except Exception as e:
         print(f"Warning: Could not set color management: {e}")
 
-    # Create Ground Plane
-    # In Blender >= 2.8, 'size' is the total width. We want a 50x50cm surface.
-    bpy.ops.mesh.primitive_plane_add(size=0.5, location=(0, 0, -0.001))
+    # Create Ground Plane (50x50cm)
+    bpy.ops.mesh.primitive_plane_add(size=0.5, location=(0, 0, 0))
     ground = bpy.context.object
+    
+    # Configure Rigid Body World for high accuracy with small LEGO parts
+    if not bpy.context.scene.rigidbody_world:
+        bpy.ops.rigidbody.world_add()
+    
+    bpy.context.scene.rigidbody_world.substeps_per_frame = 200  # Ultra-precision for small parts
+    bpy.context.scene.rigidbody_world.solver_iterations = 60   # Ensures resting contact stability
+    
     bpy.ops.rigidbody.object_add()
     ground.rigid_body.type = 'PASSIVE'
+    ground.rigid_body.friction = 0.9
+    ground.rigid_body.collision_shape = 'MESH'        # FIX: Exact surface collision (not bounding box)
+    ground.rigid_body.use_margin = True
+    ground.rigid_body.collision_margin = 0.0           # FIX: ZERO margin = no invisible air cushion
+    ground.rigid_body.restitution = 0.05               # Almost no bounce
     
-    # Material with Texture Support
-    mat = bpy.data.materials.new(name="GroundMat")
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
-    bsdf = nodes.get("Principled BSDF")
+    # --- Ambient Occlusion: Darken contact points ---
+    if hasattr(bpy.context.scene, 'eevee'):
+        if hasattr(bpy.context.scene.eevee, 'use_gtao'):
+            bpy.context.scene.eevee.use_gtao = True
+            bpy.context.scene.eevee.gtao_distance = 0.02    # 2cm radius — tight contact darkening
+            bpy.context.scene.eevee.gtao_factor = 1.5        # Slightly amplified for visibility
+    # For CYCLES, AO is built-in. We boost it via world settings if possible.
+    try:
+        bpy.context.scene.world.light_settings.use_ambient_occlusion = True
+        bpy.context.scene.world.light_settings.ao_factor = 0.5
+        bpy.context.scene.world.light_settings.distance = 0.02
+    except: pass
     
-    # Check for background image
-    bg_path = os.path.join(assets_dir, "backgrounds", "background.jpg")
+    # 🌑 Setup Ground Texture (Scanned Textures)
+    setup_ground_texture(ground, assets_dir)
     
-    # 1. Add NOISE TEXTURE to make the surface "dirty/rough/complex" to lower mAP artificially
-    noise = nodes.new('ShaderNodeTexNoise')
-    noise.inputs['Scale'].default_value = random.uniform(50, 250)
-    noise.inputs['Detail'].default_value = 15
-    
-    # Mix RGB Node to multiply dirt over the background image
-    mix_rgb = nodes.new('ShaderNodeMixRGB')
-    mix_rgb.blend_type = 'MULTIPLY'
-    mix_rgb.inputs['Fac'].default_value = random.uniform(0.1, 0.45) # 10-45% dirt intensity
-    
-    links.new(noise.outputs['Color'], mix_rgb.inputs[2])
-
-    if os.path.exists(bg_path):
-        print(f"🖼️ Loading background texture: {bg_path}")
-        tex_node = nodes.new('ShaderNodeTexImage')
-        tex_node.image = bpy.data.images.load(bg_path)
-        links.new(tex_node.outputs['Color'], mix_rgb.inputs[1])
-    else:
-        print("💡 No background image found at assets/backgrounds/background.jpg. Using random color.")
-        rgb_node = nodes.new('ShaderNodeRGB')
-        rgb_node.outputs['Color'].default_value = (random.uniform(0.1, 0.9), random.uniform(0.1, 0.9), random.uniform(0.1, 0.9), 1)
-        links.new(rgb_node.outputs['Color'], mix_rgb.inputs[1])
-
-    links.new(mix_rgb.outputs['Color'], bsdf.inputs['Base Color'])
-
-    # Extreme variation in surface reflectivity per image
-    bsdf.inputs['Roughness'].default_value = random.uniform(0.3, 0.9)
-    if 'Specular IOR Level' in bsdf.inputs: # For latest Blender 4.0 BSDF
-        bsdf.inputs['Specular IOR Level'].default_value = random.uniform(0.0, 0.8)
-    elif 'Specular' in bsdf.inputs: # For older Blender
-        bsdf.inputs['Specular'].default_value = random.uniform(0.0, 0.8)
-        
-    ground.data.materials.append(mat)
+    # Ensure it maps correctly (zenithal cam + 50x50cm plane + 50x50cm image = perfect fit usually)
+    # If UVs are needed, the default plane has them [0,1].
 
 
-    # --- CONFIGURATION FOR HIGH DENSITY ---
+
+    # --- CONFIGURATION FOR HIGH DENSITY (50x50m REAL WORLD SCALE) ---
     # User Request: 50x50cm area, 70cm height camera. 
-    # Prototype: 3 parts, but we need high density (up to 500 total).
+    # With a 36mm sensor width (Blender default), to capture 50cm at 70cm distance,
+    # the focal length (lens) = (Sensor * Distance) / FieldWidth = (36 * 70) / 50 = 50.4mm
     
-    PARTS_PER_TYPE = data.get('parts_per_type', 20) # Default to 20 if not specified
+    PARTS_PER_TYPE = data.get('parts_per_type', 40) # Increased to 40 for higher YOLO density
     
     # 1. Setup Camera (Fixed Zenithal Centered)
     # Surface is 50x50cm centered at 0,0.
     cam.location = (0, 0, 0.70) 
     cam.rotation_euler = (0, 0, 0) 
-    cam.data.lens = 50 
+    cam.data.sensor_width = 36.0 # Ensure standard full-frame sensor
+    cam.data.lens = 50.4 # Exact math to capture 50x50 area
 
     # Initialize Resolver
     resolver = LDrawResolver(ldraw_path_base)
-    print(f"DEBUG: Resolver initialized. Methods: {dir(resolver)}")
-    
+    print(f"DEBUG: Resolver initialized. Methods: {dir(resolver)}")    
 
 
-    for i, part in enumerate(parts):
+    # Iterate pieces to setup meshes and render engine
+    for i, pc in enumerate(pieces_config):
+        part = pc['part']
         ldraw_id = part['ldraw_id']
+        color_id = part.get('color_id', None)  # NEW: Read color_id from config
+        num_images = pc['imgs']
+        engine = pc['engine']
+        res = pc['res']
+        
+        color_info = f" | Color: {color_id}" if color_id is not None else ""
+        print(f"\n🚀 Blender started for piece {ldraw_id}{color_info} | Tier: {pc['tier']} | Engine: {engine} | Imgs: {num_images}")
+        
+        # Switch engine dynamically if needed
+        setup_render_engine(engine=engine, resolution=(res, res))
         part_name = f"{ldraw_id}.dat"
         
         # Strategy C: Universal Detector mode forces all class IDs to 0
@@ -465,48 +1091,95 @@ def main():
             class_id = i
         
         part_path = resolver.find_part(ldraw_id)
-        if not part_path:
+        
+        # Minifig Special Handling
+        mf_components = pc.get('minifig_components') or part.get('minifig_components')
+        if mf_components:
+            print(f"🧩 Assembling Minifig: {ldraw_id}")
+            import assemble_minifig
+            minifig_root = assemble_minifig.assemble_minifig(
+                mf_components, 
+                Path(ldraw_path_base), 
+                addon_path
+            )
+            if minifig_root:
+                unique_meshes.append({'obj': minifig_root, 'id': class_id, 'color_id': color_id})
+                minifig_root.location = (0, 0, -10)
+        elif part_path:
+            obj = import_ldraw_part(part_path, ldraw_path_base, color_id=color_id)
+            if obj:
+                set_origin_to_center(obj) # CRITICAL: Rotate around center, not LDraw anchor
+                unique_meshes.append({'obj': obj, 'id': class_id, 'color_id': color_id})
+                obj.location = (0, 0, -10) # move template out of sight
+        else:
             continue
             
-        obj = import_ldraw_part(part_path, ldraw_path_base)
-        if obj:
-            unique_meshes.append({'obj': obj, 'id': class_id})
-            obj.location = (0, 0, -10) # move template out of sight
-            
-    # Spawn Copies
+    # Function to get the max dimension in XY plane to prevent clipping out of the 50x50cm surface
+    def get_max_xy_radius(obj):
+        corners = get_hierarchy_corners(obj)
+        if not corners: return 0.02 # Default 2cm
+        max_r = 0
+        for c in corners:
+            # We care about distance from object center in local XY
+            r = math.sqrt(c.x**2 + c.y**2)
+            if r > max_r: max_r = r
+        return max_r
 
     for template in unique_meshes:
         template_obj = template['obj']
         class_id = template['id']
         
+        # Calculate safety margin for this specific part
+        part_radius = get_max_xy_radius(template_obj)
+        # Surface is 0.5x0.5m, so bounds are +/- 0.25m.
+        # Safe range is 0.25 - radius - small buffer
+        safe_limit = max(0.01, 0.25 - part_radius - 0.005)
+        
         for n in range(PARTS_PER_TYPE):
             # Duplicate
             new_obj = template_obj.copy()
             if template_obj.data:
-                new_obj.data = template_obj.data.copy() # Full copy to be safe with modifiers
+                new_obj.data = template_obj.data.copy()
             bpy.context.collection.objects.link(new_obj)
-            # Position Randomly in a pile area (40x40cm center to keep away from the 50cm edges)
-            # The surface is strictly [-0.25, 0.25] in XY. 
-            # We spawn tightly within [-0.20, 0.20] so pieces 100% land on the mat and never fall off.
-            new_obj.location = (
-                random.uniform(-0.20, 0.20), 
-                random.uniform(-0.20, 0.20), 
-                random.uniform(0.05, 0.35)  # Drop from higher up
-            )
-            new_obj.rotation_euler = (random.uniform(0, 3.14), random.uniform(0, 3.14), random.uniform(0, 3.14))
             
-            # Physics
+            # Position Randomly but strictly WITHIN the 50x50cm mat
+            new_obj.location = (
+                random.uniform(-safe_limit, safe_limit), 
+                random.uniform(-safe_limit, safe_limit), 
+                random.uniform(0.005, 0.04)  # FIX: Very low drop (5mm-4cm) for surface scatter
+            )
+            # Orientation diversity: force ~40% of pieces to start lying flat
+            # so physics settles them in horizontal orientations too
+            orientation_roll = random.random()
+            if orientation_roll < 0.40:
+                # Pre-tilt 90 deg on X or Y to force flat landing
+                tilt_axis = random.choice(['x', 'y'])
+                base_angle = random.choice([math.pi / 2, -math.pi / 2, math.pi])
+                if tilt_axis == 'x':
+                    new_obj.rotation_euler = (base_angle, random.uniform(-0.3, 0.3), random.uniform(0, 6.28))
+                else:
+                    new_obj.rotation_euler = (random.uniform(-0.3, 0.3), base_angle, random.uniform(0, 6.28))
+            else:
+                # Full random rotation
+                new_obj.rotation_euler = (random.uniform(0, 6.28), random.uniform(0, 6.28), random.uniform(0, 6.28))
+            
+            # Physics — Optimized for ground contact and 0-bounce diversity
             bpy.context.view_layer.objects.active = new_obj
             bpy.ops.rigidbody.object_add()
             new_obj.rigid_body.type = 'ACTIVE'
-            new_obj.rigid_body.mass = 0.05 # Lighter for Lego
-            new_obj.rigid_body.friction = 0.8 # Plastic friction
+            new_obj.rigid_body.mass = 0.05
+            new_obj.rigid_body.friction = 1.0              # Max friction to stay where it lands
             new_obj.rigid_body.collision_shape = 'CONVEX_HULL'
-            # Damping to stop them jiggling forever
-            new_obj.rigid_body.linear_damping = 0.5 
-            new_obj.rigid_body.angular_damping = 0.5
+            new_obj.rigid_body.use_margin = True
+            new_obj.rigid_body.collision_margin = 0.0001
+            new_obj.rigid_body.restitution = 0.0           # ZERO bounce: stays in stable pose
+            new_obj.rigid_body.linear_damping = 0.9        # High damping
+            new_obj.rigid_body.angular_damping = 0.9       # Stops spinning quickly
             
             new_obj['class_id'] = class_id
+            new_obj['ldraw_id'] = ldraw_id
+            new_obj['color_id_lego'] = template.get('color_id', -1)  # NEW: Propagate color
+            new_obj['safe_limit'] = safe_limit # Store for re-shuffling
             physics_objects.append(new_obj)
             total_spawned += 1
             
@@ -530,10 +1203,27 @@ def main():
     scene = bpy.context.scene
     
     # 3. Physics Simulation (The Drop)
-    SETTLE_FRAMES = 40 # Reduced from 60/80 for speed
+    # 150 frames ensures full settling at small LEGO scale
+    SETTLE_FRAMES = 150 
     scene.frame_end = SETTLE_FRAMES + 10
     
     offset_idx = data.get('offset_idx', 0)
+    
+    # ─── Post-Physics Snap Function ───
+    def snap_to_ground(objects, ground_z=0.0, max_hover=0.003):
+        """Force any piece still hovering above max_hover down to ground contact.
+        This is a safety net after the physics simulation."""
+        snapped = 0
+        for obj in objects:
+            if obj.location.z > ground_z + max_hover:
+                # Check if piece is supposed to rest on another piece
+                # Only snap if significantly above ground and not stacked
+                if obj.location.z > ground_z + 0.01:  # > 1cm above ground
+                    obj.location.z = ground_z + 0.001  # Place just above surface
+                    snapped += 1
+        if snapped > 0:
+            print(f"  📌 Post-physics snap: {snapped} pieces adjusted to ground.")
+    # ─────────────────────────────────
     
     # We will do 2 variations (lighting/jitter) per physical drop to save CPU time
     # Total physical drops = num_images // 2
@@ -545,12 +1235,36 @@ def main():
         bpy.ops.ptcache.free_bake_all()
         
         for obj in physics_objects:
-            obj.location = (random.uniform(-0.15, 0.15), random.uniform(-0.15, 0.15), random.uniform(0.1, 0.4))
-            obj.rotation_euler = (random.uniform(0, 3.14), random.uniform(0, 3.14), random.uniform(0, 3.14))
+            limit = obj.get('safe_limit', 0.20)
+            obj.location = (
+                random.uniform(-limit, limit), 
+                random.uniform(-limit, limit), 
+                random.uniform(0.005, 0.035)  # FIX: Very low scatter drop
+            )
+            # Orientation diversity: force ~40% to start lying flat
+            orientation_roll = random.random()
+            if orientation_roll < 0.40:
+                tilt_axis = random.choice(['x', 'y'])
+                base_angle = random.choice([math.pi / 2, -math.pi / 2, math.pi])
+                if tilt_axis == 'x':
+                    obj.rotation_euler = (base_angle, random.uniform(-0.3, 0.3), random.uniform(0, 6.28))
+                else:
+                    obj.rotation_euler = (random.uniform(-0.3, 0.3), base_angle, random.uniform(0, 6.28))
+            else:
+                obj.rotation_euler = (random.uniform(0, 6.28), random.uniform(0, 6.28), random.uniform(0, 6.28))
         
-        # 4b. Run Settle Simulation
-        scene.frame_set(SETTLE_FRAMES)
+        # 4b. Run Settle Simulation — frame-by-frame for stability
+        for frame in range(1, SETTLE_FRAMES + 1):
+            scene.frame_set(frame)
         bpy.context.view_layer.update()
+        
+        # 4b.1 Post-Physics Safety Snap
+        snap_to_ground(physics_objects)
+        
+        # 4b.2 Post-Physics Z-rotation jitter (adds 2D diversity as seen from top-down camera)
+        for obj in physics_objects:
+            current_z = obj.rotation_euler[2]
+            obj.rotation_euler[2] = current_z + random.uniform(-0.5, 0.5)  # ~+/-30deg Z jitter
         
         # 4c. Render 2 variations per drop (Lighting diversity)
         for var_idx in range(2):
@@ -558,80 +1272,108 @@ def main():
             if local_idx >= num_images: break
             
             img_idx = local_idx + offset_idx
+            print(f"PROGRESS: {local_idx + 1}/{num_images}")
             
-            # Sub-variation: Randomize lights, color tint, and slight camera jitter
-            key_light.location = (random.uniform(-3, 3), random.uniform(-3, 3), random.uniform(3, 8))
-            key_light.data.energy = random.uniform(500, 2500)
-            key_light.data.color = (random.uniform(0.7, 1.0), random.uniform(0.7, 1.0), random.uniform(0.7, 1.0))
-            fill_light.data.energy = random.uniform(50, 1000)
+            setup_lighting()
+            setup_world_hdri(assets_dir)
+            ground_obj = bpy.data.objects.get("Plane")
+            if ground_obj:
+                setup_ground_texture(ground_obj, assets_dir)
             
-            # Render
-            render_path = os.path.join(images_dir, f"img_{img_idx:04d}.png")
+            # We will generate "Negative Samples" (empty backgrounds) ~10% of the time.
+            is_empty_background = (random.random() < 0.10)
+            
+            # If empty background, move pieces out of view
+            if is_empty_background:
+                for obj in physics_objects:
+                    obj.location.z = -100 # Move them below the floor
+                bpy.context.view_layer.update()
+
+            # Render - Ensure camera is active
+            if not scene.camera:
+                scene.camera = bpy.data.objects.get("Camera")
+            
+            worker_id = data.get('worker_id', '')
+            prefix_base = f"w{worker_id}_" if worker_id != '' else ""
+            img_prefix = f"{prefix_base}img_{img_idx:04d}"
+            
+            render_path = os.path.join(images_dir, f"{img_prefix}.jpg")
             scene.render.filepath = render_path
+            
+            if not scene.camera:
+                print("⚠️ Camera still missing! Re-creating...")
+                setup_camera()
+                
             bpy.ops.render.render(write_still=True)
         
-            # 5. Generate Labels (Bounding Boxes - OBB format)
-            label_path = os.path.join(labels_dir, f"img_{img_idx:04d}.txt")
+            # 5. Generate Labels
+            label_path = os.path.join(labels_dir, f"{img_prefix}.txt")
+            # Create a separate metadata file for the indexer to map images to parts
+            meta_path = os.path.join(output_base, "image_meta.jsonl")
             
             with open(label_path, 'w') as lf:
-                for obj in physics_objects: # Iterate over all spawned physics objects
-                    camera = scene.camera
-                    
-                    # For OBB, using vertices is much more accurate than the 8 bounding box corners
-                    # because the real shape limits the tight OBB fit.
-                    verts_3d = get_hierarchy_vertices(obj)
-                    if not verts_3d:
-                        continue
-                    
-                    # Project vertices to 2D
-                    coords_2d = [bpy_extras.object_utils.world_to_camera_view(scene, camera, coord) for coord in verts_3d]
-                    
-                    # Filter visible coords and clamp to 0-1 bounds
-                    visible_points = []
-                    for c in coords_2d:
-                        if c.z > 0: # In front of camera
-                            cx, cy = max(0.0, min(1.0, c.x)), max(0.0, min(1.0, c.y))
-                            visible_points.append((cx, cy))
-                            
-                    if not visible_points: continue
-                    
-                    # Calculate Minimum Area Bounding Rectangle (MABR)
-                    hull = get_convex_hull(visible_points)
-                    mabr = get_mabr(hull)
-                    
-                    if not mabr: continue
-                    
-                    # Check area size to filter noise
-                    xs = [p[0] for p in mabr]
-                    ys = [p[1] for p in mabr]
-                    if (max(xs) - min(xs)) < 0.002 or (max(ys) - min(ys)) < 0.002:
-                        continue
+                # If negative sample, the file remains empty (0 bytes) as required by YOLO
+                if not is_empty_background:
+                    active_ids_in_image = []
+                    active_colors_in_image = []
+                    for obj in physics_objects: # Iterate over all spawned physics objects
+                        camera = scene.camera
                         
-                    # Write YOLO OBB format (class x1 y1 x2 y2 x3 y3 x4 y4)
-                    if 'class_id' in obj:
-                        # Note: Blender Y goes up, YOLO Y goes down. We invert Y.
-                        # Also YOLO-OBB expects x1 y1 x2 y2 x3 y3 x4 y4 normalized (0-1)
-                        pts = []
-                        for corner in mabr:
-                            px = max(0.0, min(1.0, corner[0]))
-                            py = max(0.0, min(1.0, 1.0 - corner[1])) # Invert Y for YOLO
-                            pts.extend([f"{px:.6f}", f"{py:.6f}"])
+                        # For OBB, using vertices is much more accurate than the 8 bounding box corners
+                        # because the real shape limits the tight OBB fit.
+                        verts_3d = get_hierarchy_vertices(obj)
+                        if not verts_3d:
+                            continue
+                    
+                        # Project vertices to 2D
+                        coords_2d = [bpy_extras.object_utils.world_to_camera_view(scene, camera, coord) for coord in verts_3d]
+                        
+                        # Filter visible coords and clamp to 0-1 bounds
+                        visible_points = []
+                        for c in coords_2d:
+                            if c.z > 0: # In front of camera
+                                cx, cy = max(0.0, min(1.0, c.x)), max(0.0, min(1.0, c.y))
+                                visible_points.append((cx, cy))
+                                
+                        if not visible_points: continue
+                        
+                        # Calculate Convex Hull for Instance Segmentation (Polygon Mask)
+                        hull = get_convex_hull(visible_points)
+                        
+                        if not hull or len(hull) < 3: continue
+                        
+                        # Check area size to filter microscopic noise
+                        xs = [p[0] for p in hull]
+                        ys = [p[1] for p in hull]
+                        if (max(xs) - min(xs)) < 0.002 or (max(ys) - min(ys)) < 0.002:
+                            continue
                             
-                        lf.write(f"{obj['class_id']} {' '.join(pts)}\n")
+                        # Write YOLO Segmentation format (class x1 y1 x2 y2 ... xn yn)
+                        if 'class_id' in obj:
+                            # Note: Blender Y goes up, YOLO Y goes down. We invert Y.
+                            # YOLO-Seg expects a continuous sequence of normalized polygon points
+                            pts = []
+                            for corner in hull:
+                                px = max(0.0, min(1.0, corner[0]))
+                                py = max(0.0, min(1.0, 1.0 - corner[1])) # Invert Y for YOLO
+                                pts.extend([f"{px:.6f}", f"{py:.6f}"])
+                                
+                            lf.write(f"{obj['class_id']} {' '.join(pts)}\n")
+                            # Track which real part ID and color is at which index
+                            active_ids_in_image.append(obj.get('ldraw_id', 'unknown'))
+                            active_colors_in_image.append(obj.get('color_id_lego', -1))
+                    
+                    # Log real IDs + colors for this image to image_meta.jsonl
+                    if active_ids_in_image:
+                        with open(meta_path, 'a') as mf:
+                            mf.write(json.dumps({
+                                "img": f"{img_prefix}.jpg", 
+                                "ids": active_ids_in_image,
+                                "color_ids": active_colors_in_image
+                            }) + "\n")
 
-    # Create data.yaml for YOLO training
-    data_yaml_path = os.path.join(output_base, "data.yaml")
-    # Path to images should be absolute for training (or relative to data.yaml)
-    # Since we move things in the notebook sometimes, let's use relative paths from data.yaml
-    with open(data_yaml_path, 'w') as f:
-        f.write(f"path: {os.path.abspath(output_base)}\n")
-        f.write("train: images\n")
-        f.write("val: images\n") # Use same for val in prototype
-        f.write("\n")
-        f.write(f"nc: {len(parts)}\n")
-        f.write(f"names: {[p['ldraw_id'] for p in parts]}\n")
-
-    print(f"✅ Created data.yaml at {data_yaml_path}")
+    # Note: data.yaml is now generated by the calling logic (generator.py) 
+    # to correctly handle merged datasets across multiple workers.
     print("Blender script finished.")
 
 if __name__ == "__main__":

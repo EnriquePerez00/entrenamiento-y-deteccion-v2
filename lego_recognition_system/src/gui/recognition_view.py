@@ -5,7 +5,7 @@ import ssl
 import urllib.request
 import io
 import certifi
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 # Fix macOS SSL certificate verification issue (common with Python from python.org)
 try:
@@ -23,275 +23,443 @@ except ImportError:
 from src.logic.feature_extractor import FeatureExtractor
 from src.logic.vector_index import VectorIndex
 
-@st.cache_resource(show_spinner="Loading AI Models...")
+
+@st.cache_resource(show_spinner="⏳ Cargando modelos de IA...")
 def load_models(models_dir):
-    """Loads and caches all models found in the models directory."""
+    """Loads and caches YOLO model + vector index. Stores status in session_state."""
+    status = {
+        "yolo_name": None,
+        "yolo_ok": False,
+        "index_count": 0,
+        "index_ok": False,
+        "errors": []
+    }
+
     if YOLO is None:
-        st.error("The `ultralytics` package is required for YOLO inference.")
+        status["errors"].append("El paquete `ultralytics` no está instalado.")
+        st.session_state["model_status"] = status
         return None, None, None
-        
-    # Search for YOLO model
+
+    # ── YOLO MODEL ──────────────────────────────────────────────────────────────
     yolo_model = None
     yolo_dir = os.path.join(models_dir, "yolo_model")
-    yolo_path = os.path.join(yolo_dir, "detector_universal.pt")
-    
-    if not os.path.exists(yolo_path) and os.path.exists(yolo_dir):
-        pt_files = [f for f in os.listdir(yolo_dir) if f.endswith(".pt")]
+    yolo_path = None
+
+    if os.path.exists(yolo_dir):
+        pt_files = sorted([f for f in os.listdir(yolo_dir) if f.endswith(".pt")], reverse=True)
         if pt_files:
-            yolo_path = os.path.join(yolo_dir, sorted(pt_files)[-1])
-            
-    if os.path.exists(yolo_path):
-        yolo_model = YOLO(yolo_path)
-        st.sidebar.info(f"🧠 Detector: `{os.path.basename(yolo_path)}`")
+            yolo_path = os.path.join(yolo_dir, pt_files[0])
+
+    if yolo_path and os.path.exists(yolo_path):
+        try:
+            yolo_model = YOLO(yolo_path)
+            status["yolo_name"] = os.path.basename(yolo_path)
+            status["yolo_ok"] = True
+        except Exception as e:
+            status["errors"].append(f"Error cargando YOLO: {e}")
     else:
-        st.warning(f"⚠️ No hay modelos YOLO (.pt) en {yolo_dir}")
-    
-    feature_extractor = FeatureExtractor(model_name='mobilenet_v3_small')
-    
-    # Load ALL available vector indices
+        status["errors"].append(f"No se encontró modelo YOLO en {yolo_dir}")
+
+    # ── FEATURE EXTRACTOR ───────────────────────────────────────────────────────
+    feature_extractor = FeatureExtractor(model_name='dinov2_vits14')
+
+    # ── VECTOR INDEX ─────────────────────────────────────────────────────────────
     vector_index = VectorIndex()
     piezas_dir = os.path.join(models_dir, "piezas_vectores")
-    index_files = []
-    
+
     if os.path.exists(piezas_dir):
-        index_files = [f for f in os.listdir(piezas_dir) if f.endswith(".pkl")]
-        
-    for idx_file in index_files:
-        try:
-            vector_index.load(os.path.join(piezas_dir, idx_file))
-        except Exception as e:
-            st.error(f"Error loading index {idx_file}: {e}")
-            
-    if not index_files:
-        st.sidebar.warning("⚠️ No hay índices de vectores (.pkl)")
+        # Prefer lego.index (Strategy C default)
+        target_index = os.path.join(piezas_dir, "lego.index")
+        if not os.path.exists(target_index):
+            # Fallback to any .index file if lego.index is missing
+            index_files = [f for f in os.listdir(piezas_dir) if f.endswith(".index")]
+            if index_files:
+                target_index = os.path.join(piezas_dir, index_files[0])
+            else:
+                target_index = None
+
+        if target_index and os.path.exists(target_index):
+            try:
+                if vector_index.load(target_index):
+                    status["index_count"] = vector_index.index.ntotal
+                    status["index_ok"] = True
+            except Exception as e:
+                status["errors"].append(f"Error cargando índice {os.path.basename(target_index)}: {e}")
+        else:
+            status["errors"].append(f"No se encontró ningún archivo .index en {piezas_dir}")
     else:
-        st.sidebar.success(f"📚 {len(index_files)} Índices cargados ({len(vector_index.embeddings)} vectores)")
+        status["errors"].append(f"Directorio de vectores no existe: {piezas_dir}")
+
+    # Store status for sidebar (but also return it for cache-hit support)
+    st.session_state["model_status"] = status
+    return yolo_model, feature_extractor, vector_index, status
+
+def render_sidebar_model_status():
+    """Reads model_status from session_state and renders it in the sidebar."""
+    s = st.session_state.get("model_status")
+    
+    with st.sidebar:
+        st.header("⚙️ Configuración")
         
-    return yolo_model, feature_extractor, vector_index
+        # Botón de refresco manual
+        if st.button("🔄 Refrescar Modelos", use_container_width=True, help="Limpia el cache y vuelve a escanear la carpeta models/"):
+            st.cache_resource.clear()
+            st.cache_data.clear()
+            st.rerun()
+            
+        st.markdown("---")
+        st.markdown("**Estado del Sistema:**")
+        
+        if not s:
+            st.caption("⏳ Cargando...")
+            return
+
+        if s["yolo_ok"]:
+            st.success(f"🧠 YOLO: `{s['yolo_name']}`")
+        else:
+            st.error("❌ Detector YOLO no encontrado")
+
+        if s["index_ok"]:
+            st.success(f"📚 {s['index_count']} vectores cargados")
+        else:
+            st.error("❌ Índice vectorial no encontrado")
+
+        for err in s.get("errors", []):
+            st.warning(f"⚠️ {err}")
+            
+        st.markdown("---")
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_lego_image(ldraw_id):
-    """Fetches a thumbnail image of the LEGO part from Rebrickable CDN with SSL bypass."""
-    # Clean up the ID since the Vector DB might return '3001.dat' instead of '3001'
+    """Fetches a thumbnail image of the LEGO part from Rebrickable CDN."""
     clean_id = str(ldraw_id).replace('.dat', '').strip()
-    
-    # Color 14 is Light Bluish Gray (standard render color)
     url = f"https://cdn.rebrickable.com/media/parts/ldraw/14/{clean_id}.png"
-    
     try:
-        # Create a secure context using certifi specifically to fix macOS errors
         context = ssl.create_default_context(cafile=certifi.where())
-        
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, context=context, timeout=3) as response:
+        with urllib.request.urlopen(req, context=context, timeout=5) as response:
             image_data = response.read()
             return Image.open(io.BytesIO(image_data))
-    except Exception as e:
-        # Silently fail and return None if missing or network error
+    except Exception:
         return None
 
-def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
-    """Renders the main recognition pipeline visualization."""
+
+def _draw_annotations(image, boxes, polygons, confidences, use_masks):
+    """Draw bounding boxes / segmentation polygons on a copy of the image with semi-transparent overlay."""
+    # Convert to RGBA for alpha blending
+    overlay = Image.new("RGBA", image.size, (255, 255, 255, 0))
+    draw = ImageDraw.Draw(overlay)
+    
+    # Base Image for the outline (sharp)
+    drawn = image.convert("RGBA")
+    draw_edge = ImageDraw.Draw(drawn)
+
+    # Dynamic styling based on resolution
+    base_dim = min(image.size)
+    line_width = max(3, int(base_dim / 300))
+    font_size = max(14, int(base_dim / 80))
     
     try:
-        # Load the image
-        image = Image.open(uploaded_file).convert("RGB")
-    except Exception as e:
-        st.error(f"Error loading image: {e}")
-        return
-        
-    yolo, extractor, v_index = load_models(models_dir)
-    if yolo is None or extractor is None:
-        return
-        
-    st.subheader("1. YOLO Detection (Phase 1)")
+        # Try different font paths common on macOS
+        font_paths = [
+            "/System/Library/Fonts/Supplemental/Arial.ttf",
+            "/System/Library/Fonts/Helvetica.ttc"
+        ]
+        font = None
+        for fp in font_paths:
+            if os.path.exists(fp):
+                font = ImageFont.truetype(fp, font_size)
+                break
+        if font is None:
+            font = ImageFont.load_default()
+    except Exception:
+        font = ImageFont.load_default()
+
+    colors_hex = ["#00FFFF", "#FF6B6B", "#FFE66D", "#4ECDC4",
+                  "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD"]
     
-    with st.spinner("Running YOLO detector..."):
-        # Run inference
-        results = yolo.predict(image, conf=conf_threshold)
-        
-    if not results:
-        st.info("No LEGO pieces detected in this image.")
-        st.image(image, use_container_width=True)
-        return
-        
-    result = results[0]
-    
-    # Check if we have OBB (Oriented Bounding Boxes) from yolo11-obb model
-    use_obb = hasattr(result, 'obb') and result.obb is not None
-    
-    num_detections = len(result.obb) if use_obb else (len(result.boxes) if result.boxes is not None else 0)
-    
-    if num_detections == 0:
-        st.info("No LEGO pieces detected in this image.")
-        st.image(image, use_container_width=True)
-        return
-    
-    if use_obb:
-        # Extract 8-coordinate polygons
-        polygons = result.obb.xyxyxyxy.cpu().numpy()
-        confidences = result.obb.conf.cpu().numpy()
-        
-        # We also need an AABB (x1,y1,x2,y2) for Phase 2 image cropping
-        boxes = []
-        for poly in polygons:
-            min_x, max_x = np.min(poly[:, 0]), np.max(poly[:, 0])
-            min_y, max_y = np.min(poly[:, 1]), np.max(poly[:, 1])
-            boxes.append([min_x, min_y, max_x, max_y])
-    else:
-        # Fallback to standard rectangular boxes
-        boxes = result.boxes.xyxy.cpu().numpy()
-        confidences = result.boxes.conf.cpu().numpy()
-    
-    # Draw boxes for the UI
-    drawn_image = image.copy()
-    draw = ImageDraw.Draw(drawn_image)
-    
+    # Convert hex to RGBA
+    def hex_to_rgba(h, alpha=100):
+        h = h.lstrip('#')
+        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4)) + (alpha,)
+
     for i, box in enumerate(boxes):
         x1, y1, x2, y2 = map(int, box)
         conf = confidences[i]
+        color_hex = colors_hex[i % len(colors_hex)]
+        color_rgba_fill = hex_to_rgba(color_hex, 60) # 60/255 transparency
+        color_rgba_edge = hex_to_rgba(color_hex, 255)
         
-        if use_obb:
-            # Draw oriented polygon
+        label = f"#{i+1} {conf:.0%}"
+
+        if use_masks and polygons is not None:
             poly = polygons[i]
-            points = [(int(pt[0]), int(pt[1])) for pt in poly]
-            draw.polygon(points, outline="red", width=3)
-            # Label on the top-left-most point of the polygon
-            draw.text((x1, max(0, y1 - 15)), f"Part {i+1} ({conf:.2f})", fill="red")
+            if len(poly) > 2:
+                points = [(int(pt[0]), int(pt[1])) for pt in poly]
+                # 1. Fill on overlay
+                draw.polygon(points, fill=color_rgba_fill, outline=None)
+                # 2. Border on main image
+                draw_edge.line(points + [points[0]], fill=color_rgba_edge, width=line_width)
         else:
-            # Draw standard bounding box
-            draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
-            draw.text((x1, max(0, y1 - 15)), f"Part {i+1} ({conf:.2f})", fill="red")
+            # Bounding Box mode
+            draw.rectangle([x1, y1, x2, y2], fill=color_rgba_fill, outline=None)
+            draw_edge.rectangle([x1, y1, x2, y2], outline=color_rgba_edge, width=line_width)
+
+        # Labels (Draw directly on main image for max crispness)
+        # Use a background box for the label to ensure readability
+        text_bbox = draw_edge.textbbox((x1, max(0, y1 - font_size - 4)), label, font=font)
+        draw_edge.rectangle([text_bbox[0]-2, text_bbox[1]-2, text_bbox[2]+2, text_bbox[3]+2], fill=color_rgba_edge)
+        draw_edge.text((x1, max(0, y1 - font_size - 4)), label, fill="black", font=font)
+
+    # Composite overlay onto the original image
+    result = Image.alpha_composite(drawn, overlay).convert("RGB")
+    return result
+
+
+def render_recognition_ui(uploaded_file, models_dir, conf_threshold):
+    """Renders the full recognition pipeline visualization."""
+
+    try:
+        image = Image.open(uploaded_file).convert("RGB")
+    except Exception as e:
+        st.error(f"Error cargando imagen: {e}")
+        return
+
+    yolo, extractor, v_index, _ = load_models(models_dir)
+    if yolo is None or extractor is None:
+        st.error("❌ Los modelos no pudieron cargarse. Revisa los errores en el sidebar.")
+        return
+
+    # ── PHASE 1: YOLO DETECTION ──────────────────────────────────────────────────
+    st.subheader("Fase 1 — Detección YOLO (Redimensión Inteligente 2K)")
+
+    with st.spinner("Preparando imagen (Letterbox 2048px)..."):
+        # INTEL-RESIZE: Convert to 2048x2048 with black padding to avoid deformation
+        orig_w, orig_h = image.size
+        target_size = 2048
+        scale = target_size / max(orig_w, orig_h)
+        new_w, new_h = int(orig_w * scale), int(orig_h * scale)
         
-    st.image(drawn_image, caption=f"Detected {len(boxes)} potential LEGO parts {'(Oriented)' if use_obb else '(Rectangular)'}", use_container_width=True)
+        # Resize maintaining aspect ratio
+        resized_img = image.resize((new_w, new_h), Image.LANCZOS)
+        
+        # Create black canvas 2048x2048
+        working_image = Image.new("RGB", (target_size, target_size), (0, 0, 0))
+        # Center the image
+        offset_x = (target_size - new_w) // 2
+        offset_y = (target_size - new_h) // 2
+        working_image.paste(resized_img, (offset_x, offset_y))
+
+    with st.spinner("Ejecutando detector YOLO en 2K..."):
+        results = yolo.predict(working_image, conf=conf_threshold, agnostic_nms=True, verbose=False)
+
+    result = results[0] if results else None
+    use_masks = result is not None and hasattr(result, 'masks') and result.masks is not None
+    num_detections = (len(result.masks.xy) if use_masks
+                      else (len(result.boxes) if result is not None and result.boxes is not None else 0))
+
+    # ── Debug info ───────────────────────────────────────────────────────────
+    with st.expander("🔍 Debug — Salida YOLO 2K", expanded=(num_detections == 0)):
+        st.markdown(f"**Escala aplicada:** `{scale:.4f}` | **Offset:** `({offset_x}, {offset_y})`")
+        if result is not None and result.boxes is not None and len(result.boxes) > 0:
+            raw_confs = result.boxes.conf.cpu().numpy()
+            st.bar_chart({"conf": raw_confs})
+
+    if num_detections == 0:
+        st.warning(f"⚠️ No se detectaron piezas LEGO con confianza ≥ {conf_threshold:.0%}.")
+        st.image(image, caption="Imagen original (sin detecciones)", use_container_width=True)
+        return
+
+    # Extract & Scale back to Original Resolution
+    scaled_boxes = [] # Boxes in original high-res space
+    raw_boxes = result.boxes.xyxy.cpu().numpy()
+    confidences = result.boxes.conf.cpu().numpy()
     
+    if use_masks:
+        raw_polygons = result.masks.xy
+        scaled_polygons = []
+        for poly in raw_polygons:
+            # Map back: (coord - offset) / scale
+            p_orig = []
+            for pt in poly:
+                px = (pt[0] - offset_x) / scale
+                py = (pt[1] - offset_y) / scale
+                p_orig.append([px, py])
+            p_orig = np.array(p_orig)
+            scaled_polygons.append(p_orig)
+            
+            # Recalculate bounding box in original space
+            min_x, max_x = np.min(p_orig[:, 0]), np.max(p_orig[:, 0])
+            min_y, max_y = np.min(p_orig[:, 1]), np.max(p_orig[:, 1])
+            scaled_boxes.append([min_x, min_y, max_x, max_y])
+    else:
+        scaled_polygons = None
+        for box in raw_boxes:
+            x1 = (box[0] - offset_x) / scale
+            y1 = (box[1] - offset_y) / scale
+            x2 = (box[2] - offset_x) / scale
+            y2 = (box[3] - offset_y) / scale
+            scaled_boxes.append([x1, y1, x2, y2])
+
+    # Draw annotations on top of high-res image
+    annotated = _draw_annotations(image, scaled_boxes, scaled_polygons, confidences, use_masks)
+
+    # Original and annotated image side by side
+    col_orig, col_annotated = st.columns(2)
+    with col_orig:
+        st.image(image, caption="📸 Imagen Original", use_container_width=True)
+    with col_annotated:
+        st.image(
+            annotated,
+            caption=f"🔍 Detección YOLO ({num_detections} piezas)",
+            use_container_width=True
+        )
+
+    # ── PHASE 2: VECTOR SEARCH CLASSIFICATION ────────────────────────────────────
     st.markdown("---")
-    st.subheader("2. Vector Search Classification (Phase 2)")
-    
-    if v_index is None or not v_index.embeddings:
-        st.warning("⚠️ No Vector Index loaded. Generating embeddings without classification.")
-        
-    # Process each detected bounding box
+    st.subheader("Fase 2 — Clasificación con recortes de alta resolución")
+
+    no_index = v_index is None or v_index.index.ntotal == 0
+    if no_index:
+        st.warning("⚠️ No hay índice de vectores cargado. Mostrando crops sin clasificar.")
+
     identified_parts = {}
-    for i, box in enumerate(boxes):
+
+    for i, box in enumerate(scaled_boxes):
         x1, y1, x2, y2 = map(int, box)
-        # Expand box slightly for better context
-        pad = 5
-        cx1, cy1 = max(0, x1-pad), max(0, y1-pad)
-        cx2, cy2 = min(image.width, x2+pad), min(image.height, y2+pad)
+        pad = 10 # More padding for high-res crops
+        cx1 = max(0, x1 - pad)
+        cy1 = max(0, y1 - pad)
+        cx2 = min(image.width, x2 + pad)
+        cy2 = min(image.height, y2 + pad)
         
+        # CRITICAL: CROP FROM ORIGINAL HIGH-RES IMAGE
         cropped_img = image.crop((cx1, cy1, cx2, cy2))
-        
-        # OBB ROBUST ALIGNMENT & MASKING: Erase background noise AND physically rotate the image to be straight
-        if use_obb:
-            poly = polygons[i]
-            
+
+        # Segmentation mask alignment & blackout on High-Res
+        if use_masks and scaled_polygons is not None:
             import cv2
-            # 1. Convert crop to numpy array for OpenCV processing
+            poly = scaled_polygons[i]
             cv_img = np.array(cropped_img)
-            
-            # 2. Shift the global OBB coordinates to relative crop coordinates
+            # Adjust polygon to crop coordinates
             cropped_poly = [(pt[0] - cx1, pt[1] - cy1) for pt in poly]
-            
-            # 3. Create a pure black mask
             mask = np.zeros(cv_img.shape[:2], dtype=np.uint8)
             pts = np.array(cropped_poly, np.int32).reshape((-1, 1, 2))
-            
-            # 4. Draw the piece shape in solid white on the mask
-            cv2.fillPoly(mask, [pts], (255))
-            
-            # 5. Composite: Only let the real image show where the mask is white (Blackout the rest)
+            cv2.fillPoly(mask, [pts], 255)
             masked_img = cv2.bitwise_and(cv_img, cv_img, mask=mask)
-            
-            # 6. MATHEMATICAL ALIGNMENT (Affine Transformation)
-            # Find the minimum area bounding rectangle to get the precise angle of the piece
+
             rect = cv2.minAreaRect(pts)
-            (center, (width, height), angle) = rect
-            
-            # OpenCV's minAreaRect can return angles close to 90 or -90 depending on version
-            # We want the piece to lay flat horizontally or vertically, so we adjust
-            if width < height:
+            (center, (width_r, height_r), angle) = rect
+            if width_r < height_r:
                 angle += 90
-            
-            # Calculate rotation matrix for affine warp
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
-            
-            # Rotate both the masked image and the mask itself
-            rotated_full = cv2.warpAffine(masked_img, M, (cv_img.shape[1], cv_img.shape[0]), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+            rotated_full = cv2.warpAffine(masked_img, M, (cv_img.shape[1], cv_img.shape[0]),
+                                          flags=cv2.INTER_CUBIC,
+                                          borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
             rotated_mask = cv2.warpAffine(mask, M, (cv_img.shape[1], cv_img.shape[0]))
-            
-            # 7. Final Straight Crop: Now that it's straight, we crop the excess black space
-            x_rot, y_rot, w_rot, h_rot = cv2.boundingRect(rotated_mask)
-            pad_final = 2
-            x_rot = max(0, x_rot - pad_final)
-            y_rot = max(0, y_rot - pad_final)
-            w_rot = min(rotated_full.shape[1] - x_rot, w_rot + pad_final * 2)
-            h_rot = min(rotated_full.shape[0] - y_rot, h_rot + pad_final * 2)
-            
-            straightened_crop = rotated_full[y_rot:y_rot+h_rot, x_rot:x_rot+w_rot]
-            
-            # 8. Convert back to PIL for MobileNet feature extractor
-            if straightened_crop.size > 0: # Safety check
-                cropped_img = Image.fromarray(straightened_crop)
+
+            x_r, y_r, w_r, h_r = cv2.boundingRect(rotated_mask)
+            pf = 2
+            x_r = max(0, x_r - pf)
+            y_r = max(0, y_r - pf)
+            w_r = min(rotated_full.shape[1] - x_r, w_r + pf * 2)
+            h_r = min(rotated_full.shape[0] - y_r, h_r + pf * 2)
+            straight = rotated_full[y_r:y_r + h_r, x_r:x_r + w_r]
+
+            if straight.size > 0:
+                cropped_img = Image.fromarray(straight)
             else:
-                 cropped_img = Image.fromarray(masked_img) # Fallback if math fails
-        
-        with st.expander(f"🧩 Part {i+1} - Confidence: {confidences[i]:.0%}", expanded=True):
-            col1, col2, col3 = st.columns([1, 1, 2])
-            
-            with col1:
-                st.image(cropped_img, caption="Mundo Real (YOLO)", use_container_width=True)
-                
-            # Extract embedding
-            embedding = extractor.get_embedding(cropped_img)
-            
-            if v_index is not None and v_index.embeddings:
-                matches = v_index.search(embedding, k=3)
-                
-                # We extract the Top Match data for the center column
-                top_match_id = matches[0]['metadata'].get('ldraw_id', 'Unknown')
-                top_match_sim = matches[0]['similarity']
-                
-                with col2:
-                    if top_match_sim > 0.4:
-                        stock_img = fetch_lego_image(top_match_id)
-                        if stock_img:
-                            st.image(stock_img, caption=f"Stock ({top_match_id}.dat)", use_container_width=True)
+                cropped_img = Image.fromarray(masked_img)
+
+        with st.expander(f"🧩 PASO {i+1}: Identificando pieza (YOLO Conf: {confidences[i]:.0%})", expanded=True):
+            col_crop, col_ref, col_details = st.columns([1.2, 1.2, 2.1])
+
+            with col_crop:
+                st.markdown("**📸 Recorte Real (YOLO)**")
+                # Add a border-like container using streamlit components if possible, 
+                # but standard st.image is fine for a clean look
+                st.image(cropped_img, use_container_width=True)
+                st.caption(f"Dim: {cropped_img.width}x{cropped_img.height}")
+
+            # Extract features and search
+            with st.spinner(f"Extrayendo vectores para pieza #{i+1}..."):
+                embedding = extractor.get_embedding(cropped_img)
+
+            if not no_index:
+                # Safety check for cached instances
+                import inspect
+                search_sig = inspect.signature(v_index.search)
+                if 'deduplicate' in search_sig.parameters:
+                    matches = v_index.search(embedding, k=3, deduplicate=True)
+                else:
+                    matches = v_index.search(embedding, k=3)
+
+                if matches:
+                    top_match = matches[0]
+                    top_id = top_match['metadata'].get('ldraw_id', 'Unknown')
+                    top_sim = top_match['similarity']
+
+                    with col_ref:
+                        st.markdown("**🎨 Referencia 3D (Top #1)**")
+                        if top_sim > 0.3:
+                            stock_img = fetch_lego_image(top_id)
+                            if stock_img:
+                                st.image(stock_img, use_container_width=True)
+                                st.success(f"ID: **{top_id}**")
+                            else:
+                                st.warning(f"ID: **{top_id}**")
+                                st.info("Imagen 3D no encontrada en Rebrickable")
                         else:
-                            st.info("Sin Imagen 3D")
-                    else:
-                        st.info("Baja Confianza")
+                            st.error("⚠️ Sin match confiable")
+                            st.caption("La similitud es demasiado baja (< 30%)")
 
-                with col3:
-                    st.markdown("**Top Matches (Vector DB):**")
-                    for match_idx, match in enumerate(matches):
-                        ldraw_id = match['metadata'].get('ldraw_id', 'Unknown')
-                        sim = match['similarity']
-                        
-                        # Count the best match for the final summary (threshold > 0.4 to be safe)
-                        if match_idx == 0 and sim > 0.4:
-                            identified_parts[ldraw_id] = identified_parts.get(ldraw_id, 0) + 1
+                    with col_details:
+                        st.markdown("**🏆 Top 3 Candidatos**")
+                        for rank, match in enumerate(matches):
+                            ldraw_id = match['metadata'].get('ldraw_id', 'Unknown')
+                            sim = match['similarity']
+
+                            medal = ["🥇", "🥈", "🥉"][rank]
+                            # Dynamic color based on similarity
+                            if sim > 0.85: color = "#2ecc71" # Green
+                            elif sim > 0.6: color = "#f1c40f" # Yellow
+                            else: color = "#e67e22" # Orange
                             
-                        # Use a progress bar to show similarity
-                        st.markdown(f"**{match_idx + 1}. ID: `{ldraw_id}`** (Sim: {sim:.2f})")
-                        st.progress(max(0.0, min(1.0, float(sim))), text=None)
-            else:
-                with col3:
-                    st.info(f"Generated Vector (Size: {embedding.shape[0]})")
-                    st.code(str(embedding[:5]) + " ...")
+                            st.markdown(
+                                f'<div style="background:#2d3436; padding:10px; border-left: 5px solid {color}; border-radius:5px; margin-bottom:8px; color: white;">'
+                                f'<span style="font-size:20px;">{medal}</span> <span style="font-weight:bold; font-size:16px; margin-left:10px;">ID: {ldraw_id}</span>'
+                                f'<div style="float:right; color:{color}; font-weight:bold; font-size:16px;">{sim:.1%}</div>'
+                                f"</div>",
+                                unsafe_allow_html=True,
+                            )
+                            st.progress(max(0.0, min(1.0, float(sim))))
 
-    # Final Summary Metrics
+                        # Count top match for summary (threshold > 0.3)
+                        if top_sim > 0.3:
+                            identified_parts[top_id] = identified_parts.get(top_id, 0) + 1
+                else:
+                    with col_details:
+                        st.info("Sin resultados en el índice.")
+            else:
+                with col_details:
+                    st.info(f"Vector generado (dim: {embedding.shape[0]})")
+                    st.code(str(embedding[:5]) + " ...")
+                    st.warning("⚠️ Carga un índice de vectores para clasificar.")
+
+    # ── SUMMARY ──────────────────────────────────────────────────────────────────
     st.markdown("---")
-    st.subheader("📊 Recognition Summary")
-    
+    st.subheader("📊 Resumen de reconocimiento")
+
     col_a, col_b = st.columns(2)
-    col_a.metric("Total Bounding Boxes (YOLO)", len(boxes))
-    col_b.metric("Total Pieces Identified (Vector DB)", sum(identified_parts.values()))
-    
+    col_a.metric("Piezas detectadas (YOLO)", num_detections)
+    col_b.metric("Piezas clasificadas (Vector DB)", sum(identified_parts.values()))
+
     if identified_parts:
-        st.write("**Piece Breakdown:**")
-        cols = st.columns(4)
-        for idx, (p_id, count) in enumerate(sorted(identified_parts.items(), key=lambda item: item[1], reverse=True)):
-            with cols[idx % 4]:
-                st.info(f"🧱 **{p_id}**: {count} units")
+        st.write("**Desglose de piezas identificadas:**")
+        cols = st.columns(min(4, len(identified_parts)))
+        for idx, (p_id, count) in enumerate(
+            sorted(identified_parts.items(), key=lambda x: x[1], reverse=True)
+        ):
+            with cols[idx % len(cols)]:
+                st.info(f"🧱 **{p_id}**: {count} ud.")

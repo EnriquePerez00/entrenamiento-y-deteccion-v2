@@ -15,9 +15,9 @@ SYNC_STATE_FILE = os.path.join(SCRIPT_DIR, '.sync_state.json')
 CONFIG_FILE = os.path.join(SCRIPT_DIR, 'config_train.json')
 
 # Directories to sync
-SYNC_DIRS = [os.path.join(SCRIPT_DIR, d) for d in ['src']]
+SYNC_DIRS = [os.path.join(SCRIPT_DIR, d) for d in ['src', 'models/piezas_vectores', 'models/yolo_model']]
 SYNC_FILES = [os.path.join(SCRIPT_DIR, f) for f in [
-    'requirements.txt', 'config_train.json', 'master_unified_pipeline.ipynb', 
+    'requirements.txt', 'config_train.json', 'generate_notebooks.py',
     'download_assets.py', 'assets/backgrounds/background.jpg', 'cycles_kernels.zip',
     'optix_cache.zip', 'credentials.json', 'token_1973.pickle'
 ]]
@@ -47,12 +47,26 @@ def get_current_state():
             h = calculate_file_hash(filepath)
             if h: state[filepath] = h
     
-    # Add generated notebooks
+    # Add generated notebooks (Recursive search in notebooks/ directory)
+    nb_base = os.path.join(SCRIPT_DIR, 'notebooks')
+    if os.path.exists(nb_base):
+        for root, _, files in os.walk(nb_base):
+            for file in files:
+                if file.endswith('.ipynb'):
+                    is_tracked = any(file.startswith(p) for p in ['Colab_', 'Kaggle_', 'LightningAI_', 'train_'])
+                    if is_tracked:
+                        filepath = os.path.join(root, file)
+                        h = calculate_file_hash(filepath)
+                        if h: state[filepath] = h
+    
+    # Also check SCRIPT_DIR for legacy/root notebooks
     for file in os.listdir(SCRIPT_DIR):
-        if file.startswith('train_') and file.endswith('.ipynb'):
-            filepath = os.path.join(SCRIPT_DIR, file)
-            h = calculate_file_hash(filepath)
-            if h: state[filepath] = h
+        if file.endswith('.ipynb'):
+            if any(file.startswith(p) for p in ['Colab_', 'Kaggle_', 'LightningAI_', 'train_']):
+                filepath = os.path.join(SCRIPT_DIR, file)
+                if filepath not in state: # Don't duplicate if already found in notebooks/
+                    h = calculate_file_hash(filepath)
+                    if h: state[filepath] = h
             
     # Add generated inventories
     for file in os.listdir(SCRIPT_DIR):
@@ -69,7 +83,7 @@ def get_current_state():
                 if '__pycache__' in root or '.ipynb_checkpoints' in root or '.git' in root:
                     continue
                 # Exclude large binary/runtime deps (downloaded by notebook at runtime)
-                if 'data/datasets' in root or 'models' in root or 'ImportLDraw' in root:
+                if 'data/datasets' in root or 'ImportLDraw' in root:
                     continue
                 # Exclude tests and outputs
                 if 'tests' in root or 'test_output' in root:
@@ -105,25 +119,71 @@ def save_state(state):
         filtered_state = {k: v for k, v in state.items() if os.path.exists(k)}
         json.dump(filtered_state, f, indent=4)
 
-def pack_for_kaggle(output_zip="kaggle_project.zip"):
-    """Zips the entire relevant project structure for Kaggle."""
-    print(f"📦 Packing project for Kaggle into {output_zip}...")
+def _get_latest_notebook():
+    """Returns the absolute path to the most recently generated notebook."""
+    notebooks = []
     
-    # Use the same logic as get_current_state for consistency
+    # 1. Check notebooks/ directory recursively
+    nb_base = os.path.join(SCRIPT_DIR, 'notebooks')
+    if os.path.exists(nb_base):
+        for root, _, files in os.walk(nb_base):
+            for file in files:
+                if file.endswith('.ipynb'):
+                    if any(file.startswith(p) for p in ['Colab_', 'Kaggle_', 'LightningAI_', 'train_']):
+                        if file != 'master_unified_pipeline.ipynb':
+                            notebooks.append(os.path.join(root, file))
+                            
+    # 2. Check root SCRIPT_DIR for legacy
+    for file in os.listdir(SCRIPT_DIR):
+        if file.endswith('.ipynb'):
+            # Track all environment-specific notebooks
+            if any(file.startswith(p) for p in ['Colab_', 'Kaggle_', 'LightningAI_', 'train_']):
+                if file != 'master_unified_pipeline.ipynb':
+                    fp = os.path.join(SCRIPT_DIR, file)
+                    if fp not in notebooks:
+                        notebooks.append(fp)
+    
+    if not notebooks:
+        return None
+    # Sort by modification time
+    notebooks.sort(key=os.path.getmtime, reverse=True)
+    return notebooks[0]
+
+def pack_project(output_zip="project.zip", env=None):
+    """
+    Zips the project structure. 
+    If env is specified ('colab', 'kaggle', 'lightning'), it ONLY includes 
+    notebooks matching that environment prefix.
+    """
+    env_prefixes = {'colab': 'Colab_', 'kaggle': 'Kaggle_', 'lightning': 'LightningAI_'}
+    target_prefix = env_prefixes.get(env)
+    
+    print(f"📦 Packing project for {env or 'all'} into {output_zip}...")
+    
     current_state = get_current_state()
     
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for filepath in current_state.keys():
+             basename = os.path.basename(filepath)
+             
+             # FILTER: If it's a notebook and we have a target env, filter it
+             if filepath.endswith('.ipynb'):
+                 if target_prefix and not basename.startswith(target_prefix):
+                     continue
+                 # Also exclude master/legacy notebooks in packages
+                 if basename == 'master_unified_pipeline.ipynb':
+                     continue
+                     
              arcname = os.path.relpath(filepath, SCRIPT_DIR)
-             # Prevent Kaggle from recursively auto-unzipping our inner archives
+             # Prevent Kaggle/Lightning AI from recursively auto-unzipping our inner archives
              if arcname in ['cycles_kernels.zip', 'optix_cache.zip']:
                  arcname = arcname.replace('.zip', '.bin')
              zipf.write(filepath, arcname=arcname)
-                         
-    print(f"✅ Kaggle Package Ready: {output_zip}")
+                          
+    print(f"✅ Package Ready: {output_zip}")
 
 def sync_to_drive():
-    """Identifies changed files and uploads them to MULTIPLE Google Drive accounts."""
+    """Identifies changed files and uploads them to Drive. Restricts notebooks to Colab only."""
     print("🔄 Checking for changes to sync...")
     
     current_state = get_current_state()
@@ -132,6 +192,11 @@ def sync_to_drive():
     changed_files = []
     
     for file, hash_val in current_state.items():
+        # FILTER: On Drive, we ONLY want Colab notebooks
+        if file.endswith('.ipynb'):
+            if not os.path.basename(file).startswith('Colab_'):
+                continue
+                
         if file not in previous_state or previous_state[file] != hash_val:
             changed_files.append(file)
             
@@ -211,11 +276,12 @@ if __name__ == "__main__":
     
     # If no arguments provided, or --all is used
     if args.all or (not args.kaggle and not args.drive):
-        print("🚀 Starting full synchronization (Drive + Kaggle)...")
+        print("🚀 Starting full synchronization (Drive + Kaggle + Lightning)...")
         sync_to_drive()
-        pack_for_kaggle()
+        pack_project("kaggle_project.zip", env='kaggle')
+        pack_project("lightning_project.zip", env='lightning')
     else:
         if args.kaggle:
-            pack_for_kaggle()
+            pack_project("kaggle_project.zip", env='kaggle')
         if args.drive:
             sync_to_drive()

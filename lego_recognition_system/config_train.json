@@ -1,24 +1,16 @@
 {
-    "session_reference": "75078-1_20260224_1309",
+    "session_reference": "part_32000_incremental",
     "target_parts": [
-        "2877",
-        "15391",
-        "15392",
-        "2412b",
-        "2653",
-        "87552",
-        "3710",
-        "2445",
-        "3040b",
-        "60481a",
-        "2449",
-        "32000",
-        "3068b",
-        "2419",
-        "28653"
+        {
+            "part_id": "32000",
+            "color_id": 71,
+            "color_name": "Light Bluish Grey"
+        }
     ],
     "render_settings": {
-        "num_images": 300,
-        "engine": "CYCLES"
+        "engine": "CYCLES",
+        "num_images": 150,
+        "resolution_x": 1280,
+        "resolution_y": 1280
     }
 }

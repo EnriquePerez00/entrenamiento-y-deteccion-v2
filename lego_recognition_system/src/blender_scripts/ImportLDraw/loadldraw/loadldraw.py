@@ -4104,12 +4104,8 @@ def setupRealisticLook():
     if Options.setRenderSettings:
         useDenoising(scene, True)
 
-        if (scene.cycles.samples < 400):
-            scene.cycles.samples = 400
-        if (scene.cycles.diffuse_bounces < 20):
-            scene.cycles.diffuse_bounces = 20
-        if (scene.cycles.glossy_bounces < 20):
-            scene.cycles.glossy_bounces = 20
+        if (scene.cycles.samples < 1):
+            scene.cycles.samples = 64
 
     # Check layer names to see if we were previously rendering instructions and change settings back.
     layerNames = getLayerNames(scene)
