@@ -11,3 +11,11 @@ token*.pickle
 results/
 models/
 ldraw/
+
+# Generated Data and Assets
+data/
+assets/
+test_output/
+temp_addon/
+runs/
+temp*/
